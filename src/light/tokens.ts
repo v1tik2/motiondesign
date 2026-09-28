@@ -35,7 +35,7 @@ export const LT = {
   gridIn: 402,
   winner: 436,
   money: 452,
-  orIn: 482,
+  orIn: 480,
   drop: 510,
   appIn: 510,
   click2: 566,

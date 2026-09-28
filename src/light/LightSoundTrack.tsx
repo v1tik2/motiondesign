@@ -54,7 +54,8 @@ const cues = (): Cue[] => [
 
 export const LightSoundTrack: React.FC = () => (
   <>
-    <Audio src={asset("sfx/music_light.wav")} volume={0.7} />
+    {/* Wide tolerance so a busy preview doesn't keep re-seeking the music. */}
+    <Audio src={asset("sfx/music_light.wav")} volume={0.7} acceptableTimeShiftInSeconds={1.2} />
     {cues().map((c, i) => (
       <Sequence key={i} from={c.at} durationInFrames={LEN[c.sfx]} layout="none">
         <Audio src={asset(`sfx/${c.sfx}.wav`)} volume={c.vol} />

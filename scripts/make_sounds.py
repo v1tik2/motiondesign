@@ -496,6 +496,109 @@ def music(drop_frame=585, gap_frame=570, total_frames=TOTAL_FRAMES, soft=False):
     return norm(mix, 0.8)
 
 
+def music_light(total_frames=780, gap_frame=480, drop_frame=510):
+    """Continuous 120 BPM bed for the light reel. Everything sits on the beat grid:
+    one steady groove, crossfaded chords, a soft arpeggio, a clean on-beat stop
+    for 'Або…' and a drop in the same tempo (no half-time switch)."""
+    END = total_frames / FPS
+    GAP, DROP = gap_frame / FPS, drop_frame / FPS
+    n = int((END + 1.0) * SR)
+    L = np.zeros(n)
+    R = np.zeros(n)
+
+    def add(sig, at, gain=1.0, pan=0.0):
+        s0 = int(round(at * SR))
+        if s0 >= n:
+            return
+        e = min(n, s0 + len(sig))
+        seg = sig[: e - s0] * gain
+        L[s0:e] += seg * (1 - max(pan, 0))
+        R[s0:e] += seg * (1 + min(pan, 0))
+
+    bar = BEAT * 4
+    # A minor → F → C → G; voiced close, one chord per bar.
+    chords = [[220.0, 261.63, 329.63], [174.61, 220.0, 261.63], [196.0, 261.63, 329.63], [196.0, 246.94, 293.66]]
+    roots = [110.0, 87.31, 130.81, 98.0]
+    in_gap = lambda tt: GAP <= tt < DROP
+
+    # Pad: each chord overlaps the next by 0.6 s with equal-power fades → no dips between bars.
+    xf = 0.6
+    for b in range(int(END / bar) + 1):
+        st = b * bar
+        ch = chords[b % 4]
+        x = t(bar + xf)
+        sig = np.zeros(len(x))
+        for f in ch:
+            for det in (-0.1, 0.1):
+                ph = 2 * np.pi * f * (1 + det / 100) * x
+                sig += np.sin(ph) + 0.25 * np.sin(2 * ph)
+        fin = np.sin(np.clip(x / xf, 0, 1) * np.pi / 2)
+        fout = np.cos(np.clip((x - bar) / xf, 0, 1) * np.pi / 2)
+        gain = 0.07 if st < DROP else 0.085
+        add(lp(sig, 1400) * fin * fout, st - (xf if b else 0), gain)
+
+    # Soft arpeggio on 8ths (chord tones up an octave), silent only during the gap.
+    pluck_cache = {}
+    def pluck(f):
+        if f not in pluck_cache:
+            x = t(0.35)
+            y = np.sin(2 * np.pi * f * x) * env(len(x), 0.002, 0.25, 4)
+            y += 0.3 * np.sin(2 * np.pi * f * 2 * x) * env(len(x), 0.002, 0.08, 5)
+            pluck_cache[f] = y
+        return pluck_cache[f]
+    pattern = [0, 1, 2, 1, 0, 2, 1, 2]
+    for step in range(int(END / (BEAT / 2)) + 1):
+        tt = step * BEAT / 2
+        if in_gap(tt) or tt >= END:
+            continue
+        ch = chords[int(tt / bar) % 4]
+        f = ch[pattern[step % 8]] * 2
+        add(pluck(f), tt, 0.05 if tt < DROP else 0.065, -0.25 if step % 2 else 0.25)
+
+    k = kick(0.4, 140, 45, 0.4)
+    hatn = int(0.05 * SR)
+    hat = hp(noise(hatn), 7500) * env(hatn, 0.0005, 0.025, 5)
+    clapn = int(0.22 * SR)
+    clap = bp(noise(clapn), 1000, 6000) * (env(clapn, 0.001, 0.015, 5) + np.roll(env(clapn, 0.001, 0.015, 5), 400) * 0.7 + np.roll(env(clapn, 0.001, 0.12, 4), 800) * 0.6)
+
+    for i in range(int(END / BEAT) + 1):
+        tb = i * BEAT
+        if in_gap(tb) or tb >= END - 0.01:
+            continue
+        drop = tb >= DROP
+        intro = tb < 4.0
+        # Kick: halves in the intro, four-on-the-floor after.
+        if not intro or i % 2 == 0:
+            add(k, tb, 0.5 if drop else 0.4)
+        if tb >= 4.0:
+            add(hat, tb + BEAT / 2, 0.09 if not drop else 0.11, 0.3)
+        if tb >= 8.0 and i % 2 == 1:
+            add(clap, tb, 0.22 if not drop else 0.3)
+        if drop:
+            add(hat, tb, 0.06, -0.3)
+            add(hat, tb + BEAT * 0.25, 0.05, -0.2)
+            add(hat, tb + BEAT * 0.75, 0.05, 0.2)
+        # Bass on each beat from 4 s, fuller after the drop.
+        if tb >= 4.0:
+            r = roots[int(tb / bar) % 4]
+            bx = t(BEAT * 0.95)
+            bass = np.sin(2 * np.pi * r * bx) + 0.3 * np.sin(2 * np.pi * r * 2 * bx)
+            add(lp(bass, 600) * env(len(bx), 0.004, 0.4, 2.5), tb, 0.22 if drop else 0.16)
+
+    # Gap: a filtered swell that lands exactly on the drop.
+    gl = DROP - GAP
+    gx = t(gl)
+    swell = sweep_filter(noise(len(gx)), 300, 6000, "low") * (gx / gl) ** 2
+    add(norm(swell, 1) * 0.12, GAP)
+
+    # Final chord rings out, then a gentle fade.
+    fade_st = int((END - 1.5) * SR)
+    fade = np.ones(n)
+    fade[fade_st:] = np.cos(np.linspace(0, np.pi / 2, n - fade_st)) ** 2
+    mix = np.stack([L * fade, R * fade], axis=1)
+    return norm(mix, 0.8)
+
+
 if __name__ == "__main__":
     print("Synthesizing SFX →", OUT)
     save("impact", impact())
@@ -515,7 +618,7 @@ if __name__ == "__main__":
     save("music", music())
     save("click", click())
     save("swish", stereo(soft_whoosh(), 0.01))
-    save("music_light", music(drop_frame=510, gap_frame=482, total_frames=780, soft=True))
+    save("music_light", music_light())
     for i, f in enumerate(PENTA):
         save(f"note_{i}", marimba(f))
     for i, f in enumerate([520, 600, 680, 760, 860, 960]):
