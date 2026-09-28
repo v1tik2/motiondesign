@@ -336,7 +336,7 @@ const GridCard: React.FC = () => {
 const APP_W = 960;
 const APP_H = 1180;
 const APP_TOP = 1010 - APP_H / 2;
-const TILE = { w: 420, h: 250, gap: 24, top: 240 };
+const TILE = { w: 420, h: 236, gap: 22, top: 236 };
 const TILE_LEFT = (APP_W - (2 * TILE.w + TILE.gap)) / 2;
 const APP_BTN_Y = APP_H - 50 - 50;
 
@@ -411,10 +411,9 @@ const AppCard: React.FC = () => {
               overflow: "hidden",
             }}
           >
-            <Img src={asset(`skins/${k.img}.png`)} style={{ position: "absolute", left: 30, top: 12, width: TILE.w - 60, height: 170, objectFit: "contain" }} />
+            <Img src={asset(`skins/${k.img}.png`)} style={{ position: "absolute", left: 30, top: 8, width: TILE.w - 60, height: 162, objectFit: "contain" }} />
             <div style={{ position: "absolute", left: 22, right: 22, bottom: 18, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontFamily: L.sans, fontWeight: 600, fontSize: 24, color: L.ink, letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.name}</span>
-              <span style={{ marginLeft: "auto", fontFamily: L.sans, fontWeight: 650, fontSize: 22, color: L.ink, background: L.accent, padding: "5px 12px", borderRadius: 14 }}>$0</span>
             </div>
             {i === 0 && sel > 0.05 ? (
               <div style={{ position: "absolute", right: 18, top: 16, width: 48, height: 48, borderRadius: 24, background: L.ink, display: "flex", alignItems: "center", justifyContent: "center", transform: `scale(${sel})` }}>
@@ -445,7 +444,7 @@ const AppCard: React.FC = () => {
           transform: `scale(${btnPress})`,
         }}
       >
-        {equipped ? "Екіпіровано · безкоштовно" : "Екіпірувати"}
+        {equipped ? "Екіпіровано" : "Екіпірувати"}
       </div>
     </div>
   );
