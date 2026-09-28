@@ -5,6 +5,7 @@ import { BRAND, CASES_PER_KNIFE, KEY_PRICE_USD, ODDS } from "../brand";
 import { Cursor, FAST, Label, Layer, Noise, SNAP, Shape, ShapeKey, Words, clamp, track, useSpring } from "./motion";
 import { L, LT } from "./tokens";
 import { LightSoundTrack } from "./LightSoundTrack";
+import { Lang, LangContext, STR, useT } from "./i18n";
 
 // ───────────────────────────── shape path ─────────────────────────────
 
@@ -59,6 +60,7 @@ const CASE_H = 960;
 const BTN_Y = CASE_H - 70 - 55; // button center, relative to card top
 
 const CaseCard: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   const press = interpolate(frame, [LT.click1 - 3, LT.click1, LT.click1 + 6], [1, 0.94, 1], clamp);
   const shake = frame > LT.click1 && frame < LT.click1 + 9 ? Math.sin(frame * 3) * 4 : 0;
@@ -95,7 +97,7 @@ const CaseCard: React.FC = () => {
           transform: `scale(${press})`,
         }}
       >
-        Відкрити <span style={{ fontFamily: L.sans, fontWeight: 600, color: L.accent, fontSize: 40, fontVariantNumeric: "tabular-nums" }}>${KEY_PRICE_USD}</span>
+        {t.open} <span style={{ fontFamily: L.sans, fontWeight: 600, color: L.accent, fontSize: 40, fontVariantNumeric: "tabular-nums" }}>${KEY_PRICE_USD}</span>
       </div>
     </div>
   );
@@ -190,6 +192,7 @@ const ROW_TOP = 180;
 const ROW_H = 160;
 
 const OddsCard: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const hlIn = useSpring(LT.highlight - 12, FAST);
@@ -198,7 +201,7 @@ const OddsCard: React.FC = () => {
   return (
     <div style={{ position: "absolute", inset: 0 }}>
       <div style={{ position: "absolute", top: 70, left: 70 }}>
-        <Label>Шанс з одного кейсу</Label>
+        <Label>{t.oddsLabel}</Label>
       </div>
       <div
         style={{
@@ -238,15 +241,16 @@ const OddsCard: React.FC = () => {
 };
 
 const BigNumber: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   const v = interpolate(frame, [LT.bigNumber, LT.bigNumber + 20], [100, 0.26], { ...clamp, easing: Easing.out(Easing.exp) });
   return (
     <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
       <Img src={asset("cases/default_rare_item_png.png")} style={{ width: 170, marginBottom: -6 }} />
       <div style={{ fontFamily: L.sans, fontWeight: 700, fontSize: 210, letterSpacing: "-0.06em", color: L.ink, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
-        {v.toFixed(2).replace(".", ",")}%
+        {v.toFixed(2).replace(".", t.decimal)}%
       </div>
-      <div style={{ marginTop: 18, fontFamily: L.sans, fontWeight: 500, fontSize: 40, color: L.muted, letterSpacing: "-0.02em" }}>ніж або рукавички</div>
+      <div style={{ marginTop: 18, fontFamily: L.sans, fontWeight: 500, fontSize: 40, color: L.muted, letterSpacing: "-0.02em" }}>{t.rareCaption}</div>
     </div>
   );
 };
@@ -274,6 +278,7 @@ const CELL_RARITY: Rarity[] = (() => {
 })();
 
 const GridCard: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   const win = useSpring(LT.winner, SNAP);
   const money = useSpring(LT.money, FAST);
@@ -282,9 +287,9 @@ const GridCard: React.FC = () => {
   return (
     <div style={{ position: "absolute", inset: 0 }}>
       <div style={{ position: "absolute", top: 60, width: "100%", textAlign: "center" }}>
-        <Label>В середньому</Label>
+        <Label>{t.avg}</Label>
         <div style={{ fontFamily: L.sans, fontWeight: 700, fontSize: 130, letterSpacing: "-0.06em", color: L.ink, lineHeight: 1.05 }}>
-          1 з {CASES_PER_KNIFE}
+          1 {t.of} {CASES_PER_KNIFE}
         </div>
       </div>
       <div style={{ position: "absolute", left: (920 - gw) / 2, top: 290, width: gw, display: "flex", flexWrap: "wrap", gap: GAP }}>
@@ -327,7 +332,7 @@ const GridCard: React.FC = () => {
         }}
       >
         <span style={{ fontFamily: L.sans, fontWeight: 700, fontSize: 76, letterSpacing: "-0.05em", color: L.ink, fontVariantNumeric: "tabular-nums" }}>≈ ${Math.round(dollars)}</span>
-        <span style={{ fontFamily: L.sans, fontWeight: 500, fontSize: 40, color: L.muted }}>лише на ключі</span>
+        <span style={{ fontFamily: L.sans, fontWeight: 500, fontSize: 40, color: L.muted }}>{t.keys}</span>
       </div>
     </div>
   );
@@ -357,6 +362,7 @@ const tileCenter = (i: number) => ({
 });
 
 const AppCard: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   const picked = useSpring(LT.click2, SNAP);
   const equipped = frame >= LT.click3;
@@ -377,9 +383,9 @@ const AppCard: React.FC = () => {
       </div>
       {/* tabs */}
       <div style={{ position: "absolute", left: 48, top: 144, display: "flex", gap: 12 }}>
-        {["Ножі", "Рукавички", "Гвинтівки"].map((t, i) => (
+        {t.tabs.map((tab, i) => (
           <span
-            key={t}
+            key={tab}
             style={{
               padding: "14px 26px",
               borderRadius: 30,
@@ -390,7 +396,7 @@ const AppCard: React.FC = () => {
               fontSize: 30,
             }}
           >
-            {t}
+            {tab}
           </span>
         ))}
       </div>
@@ -448,7 +454,7 @@ const AppCard: React.FC = () => {
           transform: `scale(${btnPress})`,
         }}
       >
-        {equipped ? "Екіпіровано" : "Екіпірувати"}
+        {equipped ? t.equipped : t.equip}
       </div>
     </div>
   );
@@ -460,6 +466,7 @@ const useSpringInline = (frame: number, at: number) => (frame < at ? 0 : spring(
 // ───────────────────────────── outro ─────────────────────────────
 
 const Outro: React.FC = () => {
+  const t = useT();
   const frame = useCurrentFrame();
   const logo = useSpring(LT.outroIn + 4, SNAP);
   const dom = useSpring(LT.outroIn + 16, FAST);
@@ -486,7 +493,7 @@ const Outro: React.FC = () => {
         cshunter.com
       </div>
       <div style={{ marginTop: 56, width: 780 }}>
-        <Words text="Грай з будь-якими скінами безкоштовно" at={LT.outroIn + 26} size={52} stagger={2} weight={620} mark="безкоштовно" />
+        <Words text={t.outro} at={LT.outroIn + 26} size={52} stagger={2} weight={620} mark={t.outroMark} />
       </div>
       <div style={{ marginTop: 44, width: 800, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14 }}>
         {BRAND.modes.map((m, i) => {
@@ -575,19 +582,21 @@ const FlyingKnife: React.FC = () => {
 
 // ───────────────────────────── composition ─────────────────────────────
 
-export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound = true }) => {
+export const KnifeChanceLight: React.FC<{ withSound?: boolean; lang?: Lang }> = ({ withSound = true, lang = "uk" }) => {
+  const t = STR[lang];
   const t0 = tileCenter(0);
   return (
+    <LangContext.Provider value={lang}>
     <AbsoluteFill style={{ background: L.canvas }}>
       <Noise />
       <Gameplay />
 
       {/* Canvas headlines */}
       <div style={{ position: "absolute", top: 330, left: 90, right: 90 }}>
-        <Words text={"Який шанс вибити ніж у\u00A0CS2?"} at={6} size={124} stagger={3} mark="ніж" exit={LT.hookOut} />
+        <Words text={t.hook} at={6} size={t.hookSize} stagger={3} mark={t.hookMark} exit={LT.hookOut} />
       </div>
       <div style={{ position: "absolute", top: 230, left: 80, right: 80 }}>
-        <Words text="Або будь-який ніж. Безкоштовно." at={LT.appIn + 4} size={70} stagger={2} mark="Безкоштовно." exit={LT.handoff - 4} />
+        <Words text={t.twist} at={LT.appIn + 4} size={70} stagger={2} mark={t.twistMark} exit={LT.handoff - 4} />
       </div>
 
       <HookKnife />
@@ -609,7 +618,7 @@ export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound 
         </Layer>
         <Layer from={LT.orIn + 4} to={LT.appIn - 2} w={340} h={132}>
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: L.sans, fontWeight: 600, fontSize: 60, color: "#fff", letterSpacing: "-0.03em" }}>
-            Або…
+            {t.or}
           </div>
         </Layer>
         <Layer from={LT.appIn + 4} to={LT.handoff - 2} w={APP_W} h={APP_H}>
@@ -639,6 +648,7 @@ export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound 
       <FlyingKnife />
       {withSound ? <LightSoundTrack /> : null}
     </AbsoluteFill>
+    </LangContext.Provider>
   );
 };
 

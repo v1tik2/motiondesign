@@ -29,6 +29,15 @@ export const RemotionRoot: React.FC = () => (
       height={HEIGHT}
       defaultProps={{ withSound: true }}
     />
+    <Composition
+      id="KnifeChanceLightEN"
+      component={KnifeChanceLight}
+      durationInFrames={LT.total}
+      fps={FPS}
+      width={WIDTH}
+      height={HEIGHT}
+      defaultProps={{ withSound: true, lang: "en" as const }}
+    />
     {/* Pre-rendered to a transparent PNG sequence (public/butterfly/) for the light reel's hook. */}
     <Composition
       id="ButterflySpin"
