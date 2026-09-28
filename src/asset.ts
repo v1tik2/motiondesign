@@ -6,6 +6,7 @@ declare global {
   interface Window {
     __assets?: Record<string, string>;
     __previewDpr?: number;
+    __knifeMode?: "2d" | "3d";
   }
 }
 

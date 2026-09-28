@@ -59,7 +59,7 @@ export const hasWebGL = (() => {
 
 // Warm every model/texture before playback starts (used by the web preview).
 export const preloadKnives = () =>
-  hasWebGL()
+  hasWebGL() && window.__knifeMode !== "2d"
     ? Promise.all([
         loadHdr(),
         ...["weapon_knife_karambit.glb", "weapon_knife_butterfly.glb"].map(loadModel),
@@ -217,7 +217,7 @@ const Knife3DCanvas: React.FC<Props> = (props) => {
 };
 
 export const Knife3D: React.FC<Props> = (props) =>
-  hasWebGL() ? <Knife3DCanvas {...props} /> : <Knife2D {...props} />;
+  hasWebGL() && window.__knifeMode !== "2d" ? <Knife3DCanvas {...props} /> : <Knife2D {...props} />;
 
 export const KNIVES = {
   karambitDoppler: {

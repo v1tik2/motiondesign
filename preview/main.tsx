@@ -4,7 +4,7 @@ import { Player, PlayerRef } from "@remotion/player";
 import { KnifeChance } from "../src/KnifeChance";
 import { FPS, HEIGHT, T, TOTAL, WIDTH, loadFonts } from "../src/theme";
 import manifest from "./manifest.json";
-import { preloadKnives } from "../src/components/Knife3D";
+import { hasWebGL, preloadKnives } from "../src/components/Knife3D";
 
 const CHAPTERS = [
   { name: "Хук", from: T.hook.from },
@@ -23,6 +23,19 @@ const fmt = (f: number) => {
 const App: React.FC = () => {
   const ref = useRef<PlayerRef>(null);
   const [frame, setFrame] = useState(0);
+  const [mode, setMode] = useState(window.__knifeMode ?? "2d");
+  const [busy, setBusy] = useState(false);
+  const switchMode = async (m: "2d" | "3d") => {
+    const at = ref.current?.getCurrentFrame() ?? 0;
+    window.__knifeMode = m;
+    if (m === "3d") {
+      setBusy(true);
+      await preloadKnives();
+      setBusy(false);
+    }
+    setMode(m);
+    setTimeout(() => ref.current?.seekTo(at), 50);
+  };
 
   useEffect(() => {
     const p = ref.current;
@@ -30,7 +43,7 @@ const App: React.FC = () => {
     const onFrame = (e: { detail: { frame: number } }) => setFrame(e.detail.frame);
     p.addEventListener("frameupdate", onFrame);
     return () => p.removeEventListener("frameupdate", onFrame);
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -41,7 +54,7 @@ const App: React.FC = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [mode]);
 
   const active = CHAPTERS.reduce((a, c, i) => (frame >= c.from ? i : a), 0);
 
@@ -49,6 +62,7 @@ const App: React.FC = () => {
     <div className="stage">
       <div className="phone">
         <Player
+          key={mode}
           ref={ref}
           component={KnifeChance}
           inputProps={{ withSound: true }}
@@ -89,6 +103,13 @@ const App: React.FC = () => {
             </li>
           ))}
         </ol>
+        <div className="mode" role="group" aria-label="Ножі">
+          <span>Ножі</span>
+          <button type="button" id="mode-2d" className={mode === "2d" ? "on" : ""} onClick={() => switchMode("2d")}>2D, швидко</button>
+          <button type="button" id="mode-3d" className={mode === "3d" ? "on" : ""} onClick={() => switchMode("3d")} disabled={busy || !hasWebGL()}>
+            {busy ? "Вантажу 3D…" : hasWebGL() ? "3D, як у відео" : "3D недоступне"}
+          </button>
+        </div>
         <p className="hint">← → покадрово · Shift + ← → по секунді · подвійний клік — на весь екран</p>
       </div>
     </div>
@@ -117,6 +138,7 @@ const Loader: React.FC = () => {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     window.__previewDpr = 0.5;
+    window.__knifeMode = "2d";
     preload(setP)
       .then(() => {
         loadFonts();

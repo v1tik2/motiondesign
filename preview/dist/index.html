@@ -64,6 +64,12 @@
   .chapters button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   .chapters button.on { background: var(--gold); border-color: var(--gold); color: var(--ink-on-gold); }
   .chapters .t { font: 500 12px/1 "JetBrains Mono", ui-monospace, monospace; opacity: .7; font-variant-numeric: tabular-nums; }
+  .mode { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .mode span { font: 500 12px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-right: 6px; }
+  .mode button { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 600 13px/1 "Onest", system-ui, sans-serif; cursor: pointer; }
+  .mode button.on { background: var(--gold); border-color: var(--gold); color: var(--ink-on-gold); }
+  .mode button:disabled { opacity: .5; cursor: default; }
+  .mode button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   .hint { margin: 0; color: var(--muted); font-size: 13px; }
   .note { margin: 0; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 12px; }
   .note b { color: var(--text); font-weight: 600; }
@@ -84,7 +90,7 @@
     <p class="sub">Живе прев’ю рілса для CSHUNTER. 3D-ножі й звук рахуються прямо у браузері, тож тут видно кожну правку без рендеру. Натисни ▶, щоб увімкнути звук.</p>
   </header>
   <div id="app"></div>
-  <p class="note">3D у прев’ю рахується в половинній роздільності, щоб не гальмувало. У фінальному MP4 все в повній якості. Музика та всі звуки синтезовані з нуля, без чужих семплів.</p>
+  <p class="note">У прев’ю ножі за замовчуванням показано як 2D-скіни, щоб працювало на будь-якому пристрої. У фінальному MP4 вони в 3D і в повній якості. Музика та всі звуки синтезовані з нуля, без чужих семплів.</p>
 </div>
 
 <script src="app.js"></script>
