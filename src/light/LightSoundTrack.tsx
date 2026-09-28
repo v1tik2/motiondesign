@@ -22,7 +22,7 @@ const cues = (): Cue[] => [
   // case
   { at: LT.click1, sfx: "click", vol: 0.9 },
   ...rouletteTicks().map((f) => ({ at: f, sfx: "tick", vol: 0.4 })),
-  { at: LT.miss + 4, sfx: "fail", vol: 0.4 },
+  { at: LT.spinEnd + 4, sfx: "fail", vol: 0.35 },
   // odds
   ...ODDS.map((_, i) => ({ at: LT.oddsIn + 6 + i * 7, sfx: "pop", vol: 0.35 })),
   { at: LT.highlight, sfx: "swish", vol: 0.45 },

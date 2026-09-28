@@ -219,7 +219,7 @@ export const Cursor: React.FC<{ keys: CursorKey[]; clicks: number[]; show: [numb
 };
 
 export const Label: React.FC<{ children: React.ReactNode; color?: string; size?: number }> = ({ children, color = L.muted, size = 26 }) => (
-  <div style={{ fontFamily: L.mono, fontSize: size, letterSpacing: "0.06em", textTransform: "uppercase", color }}>{children}</div>
+  <div style={{ fontFamily: L.sans, fontWeight: 600, fontSize: size, letterSpacing: "0.08em", textTransform: "uppercase", color }}>{children}</div>
 );
 
 export const Noise: React.FC = () => {

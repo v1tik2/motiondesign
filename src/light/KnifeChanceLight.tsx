@@ -13,7 +13,6 @@ const SHAPE: ShapeKey[] = [
   { t: 4, cx: 540, cy: 1230, w: 820, h: 600, r: 56 },
   { t: LT.caseIn, cx: 540, cy: 1000, w: 860, h: 960, r: 56 },
   { t: LT.rouletteIn, cx: 540, cy: 1000, w: 1000, h: 440, r: 44 },
-  { t: LT.miss, cx: 540, cy: 1000, w: 1000, h: 600, r: 44 },
   { t: LT.oddsIn, cx: 540, cy: 1000, w: 920, h: 1040, r: 48 },
   { t: LT.bigNumber, cx: 540, cy: 1000, w: 820, h: 560, r: 56 },
   { t: LT.gridIn, cx: 540, cy: 1000, w: 920, h: 1160, r: 48 },
@@ -93,7 +92,7 @@ const CaseCard: React.FC = () => {
           transform: `scale(${press})`,
         }}
       >
-        Відкрити <span style={{ fontFamily: L.mono, color: L.accent, fontSize: 36 }}>${KEY_PRICE_USD}</span>
+        Відкрити <span style={{ fontFamily: L.sans, fontWeight: 600, color: L.accent, fontSize: 40, fontVariantNumeric: "tabular-nums" }}>${KEY_PRICE_USD}</span>
       </div>
     </div>
   );
@@ -140,7 +139,6 @@ const Roulette: React.FC = () => {
   const frame = useCurrentFrame();
   const off = stripOffset(frame);
   const landed = frame >= LT.spinEnd + 2;
-  const cap = useSpring(LT.miss + 4, FAST);
   const W = 1000;
   return (
     <div style={{ position: "absolute", inset: 0 }}>
@@ -162,8 +160,9 @@ const Roulette: React.FC = () => {
                 height: 290,
                 borderRadius: 26,
                 background: L.tile,
-                boxShadow: isLand ? `0 0 0 4px ${col}` : isKnife && landed ? `0 0 0 4px ${L.accent}` : "none",
+                boxShadow: isLand ? `0 0 0 4px ${col}` : isKnife && landed ? `0 0 0 ${4 + 3 * Math.abs(Math.sin((frame - LT.spinEnd) / 3))}px ${L.accent}` : "none",
                 opacity: landed && !isLand && !isKnife ? 0.4 : 1,
+                transform: isKnife && landed ? `translateY(${-Math.abs(Math.sin((frame - LT.spinEnd) / 4)) * 10 * Math.max(0, 1 - (frame - LT.spinEnd) / 30)}px)` : undefined,
                 overflow: "hidden",
               }}
             >
@@ -179,24 +178,6 @@ const Roulette: React.FC = () => {
       {/* marker */}
       <div style={{ position: "absolute", left: W / 2 - 3, top: 36, width: 6, height: 338, borderRadius: 3, background: L.ink }} />
       <div style={{ position: "absolute", left: W / 2 - 16, top: 26, width: 32, height: 32, borderRadius: 16, background: L.accent, border: `5px solid ${L.ink}` }} />
-      {/* verdict */}
-      <div
-        style={{
-          position: "absolute",
-          top: 430,
-          width: W,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 20,
-          opacity: cap,
-          filter: `blur(${(1 - cap) * 8}px)`,
-          transform: `translateY(${(1 - cap) * 20}px)`,
-        }}
-      >
-        <span style={{ padding: "12px 26px", borderRadius: 40, background: "#FDECEC", color: L.covert, fontFamily: L.sans, fontWeight: 650, fontSize: 44 }}>Мимо</span>
-        <span style={{ fontFamily: L.sans, fontWeight: 550, fontSize: 44, color: L.ink, letterSpacing: "-0.03em" }}>ніж був поруч</span>
-      </div>
     </div>
   );
 };
@@ -242,7 +223,7 @@ const OddsCard: React.FC = () => {
             <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
               <span style={{ width: 20, height: 20, borderRadius: 10, background: isRare && focus > 0.5 ? L.ink : col }} />
               <span style={{ fontFamily: L.sans, fontWeight: 600, fontSize: 42, color: L.ink, letterSpacing: "-0.03em" }}>{o.label}</span>
-              <span style={{ marginLeft: "auto", fontFamily: L.mono, fontSize: 42, color: L.ink }}>{(o.pct * bar).toFixed(2)}%</span>
+              <span style={{ marginLeft: "auto", fontFamily: L.sans, fontWeight: 600, fontSize: 42, color: L.ink, fontVariantNumeric: "tabular-nums" }}>{(o.pct * bar).toFixed(2)}%</span>
             </div>
             <div style={{ marginTop: 18, height: 16, borderRadius: 8, background: isRare && focus > 0.5 ? "rgba(11,11,11,.12)" : L.line }}>
               <div style={{ height: 16, width: `${Math.max(1.2, (o.pct / 80) * 100) * bar}%`, borderRadius: 8, background: isRare && focus > 0.5 ? L.ink : col }} />
@@ -417,7 +398,7 @@ const AppCard: React.FC = () => {
             <Img src={asset(`skins/${k.img}.png`)} style={{ position: "absolute", left: 30, top: 12, width: TILE.w - 60, height: 170, objectFit: "contain" }} />
             <div style={{ position: "absolute", left: 22, right: 22, bottom: 18, display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontFamily: L.sans, fontWeight: 600, fontSize: 24, color: L.ink, letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.name}</span>
-              <span style={{ marginLeft: "auto", fontFamily: L.mono, fontSize: 22, color: L.ink, background: L.accent, padding: "5px 12px", borderRadius: 14 }}>$0</span>
+              <span style={{ marginLeft: "auto", fontFamily: L.sans, fontWeight: 650, fontSize: 22, color: L.ink, background: L.accent, padding: "5px 12px", borderRadius: 14 }}>$0</span>
             </div>
             {i === 0 && sel > 0.05 ? (
               <div style={{ position: "absolute", right: 18, top: 16, width: 48, height: 48, borderRadius: 24, background: L.ink, display: "flex", alignItems: "center", justifyContent: "center", transform: `scale(${sel})` }}>
@@ -474,9 +455,10 @@ const Outro: React.FC = () => {
           borderRadius: 60,
           background: L.ink,
           color: "#fff",
-          fontFamily: L.mono,
-          fontSize: 50,
-          letterSpacing: "0.02em",
+          fontFamily: L.sans,
+          fontWeight: 600,
+          fontSize: 52,
+          letterSpacing: "-0.02em",
           opacity: dom,
           transform: `translateY(${(1 - dom) * 20}px)`,
           filter: `blur(${(1 - dom) * 8}px)`,
@@ -538,7 +520,7 @@ export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound 
         <Layer from={LT.caseIn + 2} to={LT.rouletteIn - 2} w={CASE_W} h={CASE_H}>
           <CaseCard />
         </Layer>
-        <Layer from={LT.rouletteIn + 2} to={LT.oddsIn - 2} w={1000} h={600} dy={0}>
+        <Layer from={LT.rouletteIn + 2} to={LT.oddsIn - 2} w={1000} h={440}>
           <Roulette />
         </Layer>
         <Layer from={LT.oddsIn + 2} to={LT.bigNumber - 2} w={920} h={1040}>

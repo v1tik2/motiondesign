@@ -15,12 +15,10 @@ export const L = {
   covert: "#EB4B4B",
   rare: "#FAC116",
   sans: "Geist, system-ui, sans-serif",
-  mono: "'Geist Mono', ui-monospace, monospace",
 };
 
 export const loadLightFonts = () => {
   loadFont({ family: "Geist", weight: "100 900", format: "woff2", url: asset("fonts/Geist-Variable.woff2") });
-  loadFont({ family: "Geist Mono", weight: "500", format: "woff2", url: asset("fonts/GeistMono-Medium.woff2") });
 };
 
 // Timeline (30 fps, 120 BPM → 15 frames per beat).
@@ -31,7 +29,6 @@ export const LT = {
   rouletteIn: 134,
   spinStart: 142,
   spinEnd: 222,
-  miss: 226,
   oddsIn: 258,
   highlight: 322,
   bigNumber: 348,
