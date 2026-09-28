@@ -256,6 +256,21 @@ const CELL = 30;
 const GAP = 7;
 const WINNER = 262;
 
+// Every cell gets a rarity in the real proportions: 308 / 62 / 12 / 2 / 1 of 385.
+const CELL_RARITY: Rarity[] = (() => {
+  const counts: [Rarity, number][] = [["restricted", 62], ["classified", 12], ["covert", 2]];
+  const cells: Rarity[] = new Array(CASES_PER_KNIFE).fill("milspec");
+  const free = cells.map((_, i) => i).filter((i) => i !== WINNER);
+  for (let i = free.length - 1; i > 0; i--) {
+    const j = Math.floor(random(`shuffle${i}`) * (i + 1));
+    [free[i], free[j]] = [free[j], free[i]];
+  }
+  let k = 0;
+  for (const [r, n] of counts) for (let m = 0; m < n; m++) cells[free[k++]] = r;
+  cells[WINNER] = "rare";
+  return cells;
+})();
+
 const GridCard: React.FC = () => {
   const frame = useCurrentFrame();
   const win = useSpring(LT.winner, SNAP);
@@ -284,7 +299,8 @@ const GridCard: React.FC = () => {
                 width: CELL,
                 height: CELL,
                 borderRadius: 8,
-                background: lit ? L.accent : L.line,
+                background: CELL_RARITY[i] === "rare" ? (lit ? L.accent : L.line) : L[CELL_RARITY[i]],
+                opacity: lit || CELL_RARITY[i] !== "milspec" ? 1 : 0.8,
                 transform: `scale(${s * (lit ? 1 + win * 0.7 : 1)})`,
                 boxShadow: lit ? `0 0 0 ${4 * win}px ${L.ink}` : "none",
                 position: "relative",
