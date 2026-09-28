@@ -1,14 +1,13 @@
 import { asset } from "../asset";
 import React, { useEffect, useMemo, useState } from "react";
 import { ThreeCanvas } from "@remotion/three";
-import {continueRender, delayRender, useCurrentFrame, useVideoConfig} from "remotion";
+import { Img, continueRender, delayRender, useCurrentFrame, useVideoConfig } from "remotion";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { useThree } from "@react-three/fiber";
 
-export type Skin = { map: string; metal?: string };
-
+export type Skin = { map: string; metal?: string; image: string };
 
 type Props = {
   model: string; // file in public/models
@@ -20,46 +19,78 @@ type Props = {
   enter?: number; // 0..1 entrance progress (drives zoom/rotation)
 };
 
-const loadTex = (loader: THREE.TextureLoader, url: string, srgb: boolean) =>
-  new Promise<THREE.Texture>((res, rej) =>
-    loader.load(
-      asset(url),
-      (t) => {
-        t.flipY = false;
-        t.wrapS = t.wrapT = THREE.RepeatWrapping;
-        if (srgb) t.colorSpace = THREE.SRGBColorSpace;
-        res(t);
-      },
-      undefined,
-      rej,
-    ),
+// ───────────── shared asset cache (parsed once, reused by every scene) ─────────────
+
+const cache = new Map<string, Promise<unknown>>();
+const once = <T,>(key: string, load: () => Promise<T>) => {
+  if (!cache.has(key)) cache.set(key, load());
+  return cache.get(key) as Promise<T>;
+};
+
+const loadTex = (url: string, srgb: boolean) =>
+  once(`tex:${url}:${srgb}`, () =>
+    new THREE.TextureLoader().loadAsync(asset(url)).then((t) => {
+      t.flipY = false;
+      t.wrapS = t.wrapT = THREE.RepeatWrapping;
+      if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+      return t;
+    }),
   );
 
+const loadModel = (model: string) =>
+  once(`glb:${model}`, () => new GLTFLoader().loadAsync(asset(`models/${model}`)).then((g) => g.scene));
+
+const loadHdr = () => once("hdr", () => new RGBELoader().loadAsync(asset("environment.hdr")));
+
+export const hasWebGL = (() => {
+  let v: boolean | null = null;
+  return () => {
+    if (v === null) {
+      try {
+        const c = document.createElement("canvas");
+        v = !!(c.getContext("webgl2") || c.getContext("webgl"));
+      } catch {
+        v = false;
+      }
+    }
+    return v;
+  };
+})();
+
+// Warm every model/texture before playback starts (used by the web preview).
+export const preloadKnives = () =>
+  hasWebGL()
+    ? Promise.all([
+        loadHdr(),
+        ...["weapon_knife_karambit.glb", "weapon_knife_butterfly.glb"].map(loadModel),
+        ...Object.values(KNIVES).flatMap((s) => [loadTex(s.map, true), s.metal ? loadTex(s.metal, false) : null]),
+      ]).catch((e) => console.error(e))
+    : Promise.resolve();
+
+type Assets = {
+  scene: THREE.Group;
+  size: number;
+  textures: { map: THREE.Texture; metal: THREE.Texture | null }[];
+};
+
 const useAssets = (model: string, skins: Skin[]) => {
-  const [state, setState] = useState<{
-    scene: THREE.Group;
-    size: number;
-    textures: { map: THREE.Texture; metal: THREE.Texture | null }[];
-  } | null>(null);
+  const [state, setState] = useState<Assets | null>(null);
   const [handle] = useState(() => delayRender(`knife ${model}`));
 
   useEffect(() => {
-    const tl = new THREE.TextureLoader();
     Promise.all([
-      new Promise<THREE.Group>((res, rej) =>
-        new GLTFLoader().load(asset(`models/${model}`), (g) => res(g.scene), undefined, rej),
-      ),
+      loadModel(model),
       Promise.all(
         skins.map(async (s) => ({
-          map: await loadTex(tl, s.map, true),
-          metal: s.metal ? await loadTex(tl, s.metal, false) : null,
+          map: await loadTex(s.map, true),
+          metal: s.metal ? await loadTex(s.metal, false) : null,
         })),
       ),
     ])
-      .then(([scene, textures]) => {
+      .then(([base, textures]) => {
+        const scene = base.clone(true);
         const box = new THREE.Box3().setFromObject(scene);
-        const center = box.getCenter(new THREE.Vector3());
-        scene.position.sub(center);
+        scene.position.sub(box.getCenter(new THREE.Vector3()));
         const size = box.getSize(new THREE.Vector3()).length();
         scene.traverse((o) => {
           const m = o as THREE.Mesh;
@@ -81,22 +112,19 @@ const Env: React.FC = () => {
   const { gl, scene } = useThree();
   const [handle] = useState(() => delayRender("hdr"));
   useEffect(() => {
-    const pmrem = new THREE.PMREMGenerator(gl);
-    new RGBELoader().load(
-      asset("environment.hdr"),
-      (t) => {
+    loadHdr()
+      .then((t) => {
+        const pmrem = new THREE.PMREMGenerator(gl);
         scene.environment = pmrem.fromEquirectangular(t).texture;
-        t.dispose();
-        continueRender(handle);
-      },
-      undefined,
-      () => continueRender(handle),
-    );
+        pmrem.dispose();
+      })
+      .catch((e) => console.error(e))
+      .finally(() => continueRender(handle));
   }, [gl, scene, handle]);
   return null;
 };
 
-const Knife: React.FC<Props & { assets: NonNullable<ReturnType<typeof useAssets>> }> = ({
+const Knife: React.FC<Props & { assets: Assets }> = ({
   assets,
   swapEvery = 0,
   spin = 0.03,
@@ -133,7 +161,41 @@ const Knife: React.FC<Props & { assets: NonNullable<ReturnType<typeof useAssets>
   );
 };
 
-export const Knife3D: React.FC<Props> = (props) => {
+// Fallback when WebGL is unavailable: the skin's 2D render with a faux-3D turn.
+const Knife2D: React.FC<Props> = ({ skins, swapEvery = 0, spin = 0.03, scale = 1, enter = 1 }) => {
+  const frame = useCurrentFrame();
+  const idx = swapEvery > 0 ? Math.floor(frame / swapEvery) % skins.length : 0;
+  const turn = Math.sin(frame * spin * 1.2) * 28;
+  const shine = ((frame * 14) % 1600) - 400;
+  return (
+    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", perspective: 1400 }}>
+      <div
+        style={{
+          width: 900 * scale,
+          transform: `rotateY(${turn + (1 - enter) * 540}deg) rotateZ(${-12 + Math.sin(frame / 25) * 4}deg) scale(${0.3 + 0.7 * enter}) translateY(${Math.sin(frame / 18) * 14}px)`,
+          position: "relative",
+          filter: "drop-shadow(0 30px 50px rgba(0,0,0,.7))",
+        }}
+      >
+        <Img src={asset(skins[idx].image)} style={{ width: "100%", display: "block" }} />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: `linear-gradient(105deg, transparent ${shine / 16}%, rgba(255,255,255,.55) ${shine / 16 + 4}%, transparent ${shine / 16 + 9}%)`,
+            WebkitMaskImage: `url(${asset(skins[idx].image)})`,
+            maskImage: `url(${asset(skins[idx].image)})`,
+            WebkitMaskSize: "100% 100%",
+            maskSize: "100% 100%",
+            mixBlendMode: "screen",
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const Knife3DCanvas: React.FC<Props> = (props) => {
   const { width, height } = useVideoConfig();
   const assets = useAssets(props.model, props.skins);
   return (
@@ -154,37 +216,38 @@ export const Knife3D: React.FC<Props> = (props) => {
   );
 };
 
+export const Knife3D: React.FC<Props> = (props) =>
+  hasWebGL() ? <Knife3DCanvas {...props} /> : <Knife2D {...props} />;
+
 export const KNIVES = {
   karambitDoppler: {
     map: "textures/weapon_knife_karambit/418.webp",
     metal: "textures/weapon_knife_karambit/doppler_metal.webp",
+    image: "skins/weapon_knife_karambit-418.png",
   },
   karambitFade: {
     map: "textures/weapon_knife_karambit/38.png",
     metal: "textures/weapon_knife_karambit/38_metal.png",
+    image: "skins/weapon_knife_karambit-38.png",
   },
   karambitMarble: {
     map: "textures/weapon_knife_karambit/413.png",
     metal: "textures/weapon_knife_karambit/413_metal.png",
+    image: "skins/weapon_knife_karambit-413.png",
   },
   karambitCaseHardened: {
     map: "textures/weapon_knife_karambit/44.png",
     metal: "textures/weapon_knife_karambit/44_metal.png",
+    image: "skins/weapon_knife_karambit-44.png",
   },
   butterflyGamma: {
     map: "textures/weapon_knife_butterfly/568.webp",
     metal: "textures/weapon_knife_butterfly/doppler_metal.webp",
+    image: "skins/weapon_knife_butterfly-568.png",
   },
   butterflyFade: {
     map: "textures/weapon_knife_butterfly/38.png",
     metal: "textures/weapon_knife_butterfly/38_metal.png",
-  },
-  m9Tiger: {
-    map: "textures/weapon_knife_m9_bayonet/409.png",
-    metal: "textures/weapon_knife_m9_bayonet/409_metal.png",
-  },
-  m9Doppler: {
-    map: "textures/weapon_knife_m9_bayonet/415.webp",
-    metal: "textures/weapon_knife_m9_bayonet/doppler_metal.webp",
+    image: "skins/weapon_knife_butterfly-38.png",
   },
 } satisfies Record<string, Skin>;

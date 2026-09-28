@@ -4,6 +4,7 @@ import { Player, PlayerRef } from "@remotion/player";
 import { KnifeChance } from "../src/KnifeChance";
 import { FPS, HEIGHT, T, TOTAL, WIDTH, loadFonts } from "../src/theme";
 import manifest from "./manifest.json";
+import { preloadKnives } from "../src/components/Knife3D";
 
 const CHAPTERS = [
   { name: "Хук", from: T.hook.from },
@@ -119,7 +120,7 @@ const Loader: React.FC = () => {
     preload(setP)
       .then(() => {
         loadFonts();
-        return document.fonts.ready;
+        return Promise.all([document.fonts.ready, preloadKnives()]);
       })
       .then(() => setReady(true))
       .catch((e) => setErr(String(e)));
