@@ -233,6 +233,25 @@ def coin_roll():
     return norm(y, 0.55)
 
 
+def click():
+    """Crisp UI mouse click."""
+    n = int(0.06 * SR)
+    x = t(0.06)
+    a = hp(noise(n), 2500) * env(n, 0.0002, 0.004, 6)
+    b = np.sin(2 * np.pi * 3200 * x) * env(n, 0.0002, 0.008, 6) * 0.5
+    c = np.concatenate([np.zeros(int(0.022 * SR)), (hp(noise(n), 3000) * env(n, 0.0002, 0.003, 6) * 0.5)[: n - int(0.022 * SR)]])
+    return norm(a + b + c, 0.7)
+
+
+def soft_whoosh(dur=0.42):
+    """Airy morph swish."""
+    n = int(dur * SR)
+    y = sweep_filter(noise(n), 500, 3500, "low")
+    y = hp(y, 250)
+    shape = np.sin(np.linspace(0, np.pi, n)) ** 3
+    return norm(y * shape, 0.45)
+
+
 def cash():
     """Register 'cha-ching' accent."""
     n = int(1.0 * SR)
@@ -245,9 +264,10 @@ def cash():
 
 # ───────────────────────────── music bed ─────────────────────────────
 
-def music():
-    """28 s bed: tension build (hook→stats), silence on 'АБО...', drop, outro."""
-    total = TOTAL_FRAMES / FPS + 1.5
+def music(drop_frame=585, gap_frame=570, total_frames=TOTAL_FRAMES, soft=False):
+    """Bed: tension build (hook→stats), silence on 'АБО...', drop, outro."""
+    TOTAL = total_frames
+    total = TOTAL / FPS + 1.5
     n = int(total * SR)
     L = np.zeros(n)
     R = np.zeros(n)
@@ -262,9 +282,9 @@ def music():
         R[s:e] += seg * (1 + min(pan, 0))
 
     f2s = lambda f: f / FPS
-    DROP = f2s(585)  # 19.5 s, beat 39
-    GAP = (f2s(570), DROP)
-    END = f2s(TOTAL_FRAMES)
+    DROP = f2s(drop_frame)
+    GAP = (f2s(gap_frame), DROP)
+    END = f2s(TOTAL)
 
     # Chords (A minor, dark): Am – F – C – G, one per bar.
     roots = [55.0, 43.65, 65.41, 49.0]
@@ -333,15 +353,15 @@ def music():
                 r = roots[int(tb / bar) % 4]
                 bx = t(BEAT * 2)
                 f = r * (1 + 0.6 * np.exp(-bx * 30))
-                s808 = np.tanh(2.5 * np.sin(2 * np.pi * np.cumsum(f) / SR)) * env(len(bx), 0.002, BEAT * 2, 2.2)
-                add(s808, tb, 0.55)
+                s808 = np.tanh((1.2 if soft else 2.5) * np.sin(2 * np.pi * np.cumsum(f) / SR)) * env(len(bx), 0.002, BEAT * 2, 2.2)
+                add(s808, tb, 0.45 if soft else 0.55)
                 add(k, tb, 0.7)
             if i % 4 == 2:
                 add(clap, tb, 0.55)
                 add(k, tb + BEAT * 0.5, 0.4)
             for sub in range(4 if (i % 8) < 6 else 6):
                 step = BEAT / (4 if (i % 8) < 6 else 6)
-                add(hat, tb + sub * step, 0.16 if sub % 2 else 0.22, 0.35 if sub % 2 else -0.35)
+                add(hat, tb + sub * step, (0.1 if sub % 2 else 0.14) if soft else (0.16 if sub % 2 else 0.22), 0.35 if sub % 2 else -0.35)
             if i % 8 == 7:
                 add(ohat, tb + BEAT / 2, 0.25)
 
@@ -376,3 +396,6 @@ if __name__ == "__main__":
     save("coins", stereo(coin_roll(), 0.01))
     save("cash", cash())
     save("music", music())
+    save("click", click())
+    save("swish", stereo(soft_whoosh(), 0.01))
+    save("music_light", music(drop_frame=510, gap_frame=482, total_frames=780, soft=True))

@@ -1,18 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Player, PlayerRef } from "@remotion/player";
-import { KnifeChance } from "../src/KnifeChance";
-import { FPS, HEIGHT, T, TOTAL, WIDTH, loadFonts } from "../src/theme";
+import { KnifeChanceLight } from "../src/light/KnifeChanceLight";
+import { LT, loadLightFonts } from "../src/light/tokens";
+import { FPS, HEIGHT, WIDTH } from "../src/theme";
 import manifest from "./manifest.json";
-import { hasWebGL, preloadKnives } from "../src/components/Knife3D";
 
+const TOTAL = LT.total;
 const CHAPTERS = [
-  { name: "Хук", from: T.hook.from },
-  { name: "Рулетка", from: T.roulette.from },
-  { name: "Шанси", from: T.odds.from },
-  { name: "1 з 385", from: T.oneIn.from },
-  { name: "Поворот", from: T.twist.from },
-  { name: "Фінал", from: T.outro.from },
+  { name: "Хук", from: 0 },
+  { name: "Кейс і рулетка", from: LT.caseIn },
+  { name: "Шанси", from: LT.oddsIn },
+  { name: "1 з 385", from: LT.gridIn },
+  { name: "Або… CSHUNTER", from: LT.orIn },
+  { name: "Фінал", from: LT.outroIn },
 ];
 
 const fmt = (f: number) => {
@@ -23,19 +24,6 @@ const fmt = (f: number) => {
 const App: React.FC = () => {
   const ref = useRef<PlayerRef>(null);
   const [frame, setFrame] = useState(0);
-  const [mode, setMode] = useState(window.__knifeMode ?? "2d");
-  const [busy, setBusy] = useState(false);
-  const switchMode = async (m: "2d" | "3d") => {
-    const at = ref.current?.getCurrentFrame() ?? 0;
-    window.__knifeMode = m;
-    if (m === "3d") {
-      setBusy(true);
-      await preloadKnives();
-      setBusy(false);
-    }
-    setMode(m);
-    setTimeout(() => ref.current?.seekTo(at), 50);
-  };
 
   useEffect(() => {
     const p = ref.current;
@@ -43,7 +31,7 @@ const App: React.FC = () => {
     const onFrame = (e: { detail: { frame: number } }) => setFrame(e.detail.frame);
     p.addEventListener("frameupdate", onFrame);
     return () => p.removeEventListener("frameupdate", onFrame);
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -54,7 +42,7 @@ const App: React.FC = () => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [mode]);
+  }, []);
 
   const active = CHAPTERS.reduce((a, c, i) => (frame >= c.from ? i : a), 0);
 
@@ -62,9 +50,8 @@ const App: React.FC = () => {
     <div className="stage">
       <div className="phone">
         <Player
-          key={mode}
           ref={ref}
-          component={KnifeChance}
+          component={KnifeChanceLight}
           inputProps={{ withSound: true }}
           durationInFrames={TOTAL}
           fps={FPS}
@@ -103,13 +90,6 @@ const App: React.FC = () => {
             </li>
           ))}
         </ol>
-        <div className="mode" role="group" aria-label="Ножі">
-          <span>Ножі</span>
-          <button type="button" id="mode-2d" className={mode === "2d" ? "on" : ""} onClick={() => switchMode("2d")}>2D, швидко</button>
-          <button type="button" id="mode-3d" className={mode === "3d" ? "on" : ""} onClick={() => switchMode("3d")} disabled={busy || !hasWebGL()}>
-            {busy ? "Вантажу 3D…" : hasWebGL() ? "3D, як у відео" : "3D недоступне"}
-          </button>
-        </div>
         <p className="hint">← → покадрово · Shift + ← → по секунді · подвійний клік — на весь екран</p>
       </div>
     </div>
@@ -138,11 +118,10 @@ const Loader: React.FC = () => {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     window.__previewDpr = 0.5;
-    window.__knifeMode = "2d";
     preload(setP)
       .then(() => {
-        loadFonts();
-        return Promise.all([document.fonts.ready, preloadKnives()]);
+        loadLightFonts();
+        return document.fonts.ready;
       })
       .then(() => setReady(true))
       .catch((e) => setErr(String(e)));
@@ -152,7 +131,7 @@ const Loader: React.FC = () => {
     <div className="stage">
       <div className="phone loading">
         <div className="bar"><i style={{ width: `${Math.round(p * 100)}%` }} /></div>
-        <span>{err ? `Не вдалося завантажити: ${err}` : `Завантажую скіни, 3D і звук… ${Math.round(p * 100)}%`}</span>
+        <span>{err ? `Не вдалося завантажити: ${err}` : `Завантажую скіни і звук… ${Math.round(p * 100)}%`}</span>
       </div>
     </div>
   );

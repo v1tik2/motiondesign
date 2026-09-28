@@ -5,7 +5,8 @@ import { build } from "esbuild";
 import { readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
-const SKIP = [/textures\/weapon_(awp|ak47|knife_m9_bayonet)\//, /models\/weapon_knife_m9/];
+// The light reel uses 2D skin renders only; 3D models/textures and the v1 fonts/music stay out.
+const SKIP = [/^textures\//, /^models\//, /^environment\.hdr$/, /^fonts\/(unbounded|inter)-/, /^sfx\/music\.wav$/, /OFL/];
 const walk = (d) => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : [join(d, f)]));
 const files = walk("public")
   .map((f) => relative("public", f))

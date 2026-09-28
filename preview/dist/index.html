@@ -1,36 +1,36 @@
 <title>CSHUNTER Knife Reel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;900&family=Onest:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@500&display=swap">
 <style>
   :root {
-    color-scheme: dark;
-    --ground: #06070B;
-    --panel: #0E1018;
-    --line: #232737;
-    --text: #F4F5F8;
-    --muted: #8A8FA3;
+    color-scheme: light;
+    --ground: #E9E7E2;
+    --panel: #FFFFFF;
+    --line: #DDDAD3;
+    --text: #0B0B0B;
+    --muted: #85827B;
     --gold: #FAC116;
     --ink-on-gold: #1A1200;
   }
   html, body { background: var(--ground); }
   body {
     color: var(--text);
-    font: 400 15px/1.5 "Onest", system-ui, sans-serif;
+    font: 400 15px/1.5 "Geist", system-ui, sans-serif;
     padding-inline: 16px;
     padding-block: 20px 32px;
   }
   .wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 20px; }
   header { display: grid; gap: 6px; }
   .eyebrow {
-    font: 600 12px/1 "JetBrains Mono", ui-monospace, monospace;
-    letter-spacing: .12em; text-transform: uppercase; color: var(--gold);
+    font: 500 12px/1 "Geist Mono", ui-monospace, monospace;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
   }
   h1 {
-    margin: 0; font: 900 clamp(24px, 4.4vw, 40px)/1.05 "Unbounded", system-ui, sans-serif;
-    letter-spacing: -.02em; text-wrap: balance;
+    margin: 0; font: 700 clamp(26px, 4.6vw, 44px)/1.05 "Geist", system-ui, sans-serif;
+    letter-spacing: -.045em; text-wrap: balance;
   }
-  h1 em { font-style: normal; color: var(--gold); }
+  h1 em { font-style: normal; background: var(--gold); border-radius: .12em; padding: 0 .08em; }
   .sub { margin: 0; color: var(--muted); max-width: 62ch; }
 
   .stage { display: flex; gap: 24px; align-items: flex-start; }
@@ -42,31 +42,31 @@
     border-radius: 22px;
     overflow: hidden;
     border: 1px solid var(--line);
-    box-shadow: 0 0 0 6px #000, 0 30px 80px -20px rgba(255, 201, 60, .25);
-    background: #000;
+    box-shadow: 0 2px 4px rgba(20,18,14,.06), 0 30px 80px -24px rgba(20,18,14,.35);
+    background: var(--ground);
   }
   .side { flex: 1; min-width: 0; display: grid; gap: 16px; }
   .readout {
     display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
     padding-bottom: 12px; border-bottom: 1px solid var(--line);
   }
-  .tc { font: 500 32px/1 "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
-  .fr { font: 500 12px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tc { font: 500 32px/1 "Geist Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .fr { font: 500 12px/1 "Geist Mono", ui-monospace, monospace; color: var(--muted); font-variant-numeric: tabular-nums; }
   .chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .chapters button {
     width: 100%; display: flex; gap: 14px; align-items: center;
     padding: 12px 14px; border-radius: 12px;
     border: 1px solid var(--line); background: var(--panel); color: var(--text);
-    font: 600 15px/1 "Onest", system-ui, sans-serif; text-align: left; cursor: pointer;
+    font: 600 15px/1 "Geist", system-ui, sans-serif; text-align: left; cursor: pointer;
     transition: border-color .15s, background .15s;
   }
-  .chapters button:hover { border-color: #3a4058; }
-  .chapters button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-  .chapters button.on { background: var(--gold); border-color: var(--gold); color: var(--ink-on-gold); }
-  .chapters .t { font: 500 12px/1 "JetBrains Mono", ui-monospace, monospace; opacity: .7; font-variant-numeric: tabular-nums; }
+  .chapters button:hover { border-color: #c9c5bc; }
+  .chapters button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .chapters button.on { background: var(--text); border-color: var(--text); color: #fff; }
+  .chapters .t { font: 500 12px/1 "Geist Mono", ui-monospace, monospace; opacity: .7; font-variant-numeric: tabular-nums; }
   .mode { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .mode span { font: 500 12px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-right: 6px; }
-  .mode button { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 600 13px/1 "Onest", system-ui, sans-serif; cursor: pointer; }
+  .mode span { font: 500 12px/1 "Geist Mono", ui-monospace, monospace; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-right: 6px; }
+  .mode button { padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 600 13px/1 "Geist", system-ui, sans-serif; cursor: pointer; }
   .mode button.on { background: var(--gold); border-color: var(--gold); color: var(--ink-on-gold); }
   .mode button:disabled { opacity: .5; cursor: default; }
   .mode button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
@@ -85,12 +85,12 @@
 
 <div class="wrap">
   <header>
-    <span class="eyebrow">Reels · TikTok · Threads — 1080×1920 · 28 с</span>
+    <span class="eyebrow">Reels · TikTok · Threads — 1080×1920 · 26 с</span>
     <h1>Який шанс вибити <em>ніж</em> в CS2?</h1>
-    <p class="sub">Живе прев’ю рілса для CSHUNTER. 3D-ножі й звук рахуються прямо у браузері, тож тут видно кожну правку без рендеру. Натисни ▶, щоб увімкнути звук.</p>
+    <p class="sub">Живе прев’ю рілса для CSHUNTER. Відео і звук програються прямо в браузері, тож кожну правку видно без рендеру. Натисни ▶, щоб увімкнути звук.</p>
   </header>
   <div id="app"></div>
-  <p class="note">У прев’ю ножі за замовчуванням показано як 2D-скіни, щоб працювало на будь-якому пристрої. У фінальному MP4 вони в 3D і в повній якості. Музика та всі звуки синтезовані з нуля, без чужих семплів.</p>
+  <p class="note">Світла версія: одна фігура, що перетікає між сценами, курсор і шрифт Geist. Звук синтезовано з нуля. Коли все влаштовує, я рендерю фінальний MP4.</p>
 </div>
 
 <script src="app.js"></script>
