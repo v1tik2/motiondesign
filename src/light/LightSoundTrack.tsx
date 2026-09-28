@@ -1,6 +1,7 @@
 import React from "react";
 import { Audio, Sequence } from "remotion";
 import { asset } from "../asset";
+import { BRAND } from "../brand";
 import { LT } from "./tokens";
 import { rouletteTicks } from "./KnifeChanceLight";
 
@@ -46,16 +47,24 @@ const cues = (): Cue[] => [
   { at: LT.click2 + 1, sfx: "select", vol: 0.35 },
   { at: LT.click3, sfx: "click", vol: 0.8 },
   { at: LT.click3 + 1, sfx: "success", vol: 0.4 },
+  // handoff
+  { at: LT.handoff - 2, sfx: "swish", vol: 0.4 },
+  { at: LT.handoff + 18, sfx: "knock", vol: 0.3 },
   // outro
   { at: LT.outroIn + 4, sfx: "impact", vol: 0.4 },
   { at: LT.outroIn + 16, sfx: "chime", vol: 0.22 },
-  ...[9, 8, 7, 6, 5, 4, 3, 2, 1].map((n, i) => ({ at: LT.outroIn + 44 + i * 3, sfx: `note_${n}`, vol: 0.13 })),
+  ...BRAND.modes.map((_, i) => ({ at: LT.outroIn + 44 + i * 3, sfx: `note_${9 - (i % 10)}`, vol: 0.13 })),
 ];
 
 export const LightSoundTrack: React.FC = () => (
   <>
     {/* Wide tolerance so a busy preview doesn't keep re-seeking the music. */}
-    <Audio src={asset("sfx/music_light.wav")} volume={0.7} acceptableTimeShiftInSeconds={1.2} />
+    <Audio
+      src={asset("sfx/music_light.wav")}
+      // Duck the music under the gameplay's own sound.
+      volume={(f) => (f >= LT.handoff + 6 && f < LT.outroIn - 6 ? 0.28 : 0.7)}
+      acceptableTimeShiftInSeconds={1.2}
+    />
     {cues().map((c, i) => (
       <Sequence key={i} from={c.at} durationInFrames={LEN[c.sfx]} layout="none">
         <Audio src={asset(`sfx/${c.sfx}.wav`)} volume={c.vol} />

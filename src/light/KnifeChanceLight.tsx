@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Easing, Img, interpolate, random, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Easing, Freeze, Img, OffthreadVideo, Sequence, interpolate, random, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { asset } from "../asset";
 import { BRAND, CASES_PER_KNIFE, KEY_PRICE_USD, ODDS } from "../brand";
 import { Cursor, FAST, Label, Layer, Noise, SNAP, Shape, ShapeKey, Words, clamp, track, useSpring } from "./motion";
@@ -7,6 +7,9 @@ import { L, LT } from "./tokens";
 import { LightSoundTrack } from "./LightSoundTrack";
 
 // ───────────────────────────── shape path ─────────────────────────────
+
+// Corner card the equipped knife lands on while the gameplay plays.
+const BADGE = { cx: 250, cy: 1470, w: 400, h: 270 };
 
 const SHAPE: ShapeKey[] = [
   { t: 0, cx: 540, cy: 1230, w: 120, h: 120, r: 60 },
@@ -18,6 +21,7 @@ const SHAPE: ShapeKey[] = [
   { t: LT.gridIn, cx: 540, cy: 1000, w: 920, h: 1160, r: 48 },
   { t: LT.orIn, cx: 540, cy: 1000, w: 340, h: 132, r: 66, dark: 1 },
   { t: LT.appIn, cx: 540, cy: 1010, w: 960, h: 1180, r: 44, dark: 0 },
+  { t: LT.handoff, cx: BADGE.cx, cy: BADGE.cy, w: BADGE.w, h: BADGE.h, r: 36, dark: 0 },
   { t: LT.outroIn, cx: 540, cy: 1000, w: 900, h: 1060, r: 56, dark: 0 },
 ];
 
@@ -508,6 +512,86 @@ const Outro: React.FC = () => {
   );
 };
 
+// ───────────────────────────── gameplay handoff ─────────────────────────────
+
+const Gameplay: React.FC = () => {
+  const frame = useCurrentFrame();
+  const fadeIn = interpolate(frame, [LT.handoff, LT.handoff + 14], [0, 1], clamp);
+  const dim = interpolate(frame, [LT.outroIn - 4, LT.outroIn + 18], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  if (frame < LT.handoff) return null;
+  const style: React.CSSProperties = { width: "100%", height: "100%", objectFit: "cover" };
+  return (
+    <AbsoluteFill
+      style={{
+        opacity: fadeIn,
+        transform: `scale(${1.04 - 0.04 * fadeIn + 0.06 * dim})`,
+        filter: `blur(${dim * 18}px) grayscale(${dim}) brightness(${1 - dim * 0.08})`,
+      }}
+    >
+      <Sequence from={LT.handoff} durationInFrames={LT.videoFrames} layout="none">
+        <OffthreadVideo src={asset("gameplay.mp4")} volume={0.55} style={style} />
+      </Sequence>
+      <Sequence from={LT.handoff + LT.videoFrames} layout="none">
+        <Freeze frame={LT.videoFrames - 1}>
+          <OffthreadVideo src={asset("gameplay.mp4")} muted style={style} />
+        </Freeze>
+      </Sequence>
+      <AbsoluteFill style={{ background: L.canvas, opacity: dim * 0.35 }} />
+    </AbsoluteFill>
+  );
+};
+
+// The equipped knife travels from its tile to the corner card, then leaves with it.
+const FlyingKnife: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  if (frame < LT.handoff || frame > LT.outroIn + 10) return null;
+  const t0 = tileCenter(0);
+  const cfg = { damping: 20, mass: 1, stiffness: 110 };
+  const x = track(frame, fps, [[0, t0.x], [LT.handoff, BADGE.cx]], cfg);
+  const y = track(frame, fps, [[0, t0.y - 30], [LT.handoff, BADGE.cy - 30]], cfg);
+  const w = track(frame, fps, [[0, TILE.w - 60], [LT.handoff, 320]], cfg);
+  const rot = track(frame, fps, [[0, 0], [LT.handoff, -8]], cfg) + Math.sin((frame - LT.handoff) / 20) * 2;
+  const out = interpolate(frame, [LT.outroIn - 6, LT.outroIn + 6], [1, 0], clamp);
+  const label = interpolate(frame, [LT.handoff + 16, LT.handoff + 26], [0, 1], clamp) * out;
+  return (
+    <>
+      <Img
+        src={asset("skins/weapon_knife_karambit-38.png")}
+        style={{
+          position: "absolute",
+          left: x - w / 2,
+          top: y - w * 0.36,
+          width: w,
+          transform: `rotate(${rot}deg)`,
+          opacity: out,
+          filter: "drop-shadow(0 16px 20px rgba(20,18,14,.25))",
+          zIndex: 20,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: BADGE.cx - BADGE.w / 2,
+          top: BADGE.cy + BADGE.h / 2 - 66,
+          width: BADGE.w,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 10,
+          opacity: label,
+          zIndex: 21,
+        }}
+      >
+        <span style={{ width: 30, height: 30, borderRadius: 15, background: L.ink, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" stroke={L.accent} strokeWidth="3.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </span>
+        <span style={{ fontFamily: L.sans, fontWeight: 600, fontSize: 28, color: L.ink, letterSpacing: "-0.02em" }}>Karambit | Fade</span>
+      </div>
+    </>
+  );
+};
+
 // ───────────────────────────── composition ─────────────────────────────
 
 export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound = true }) => {
@@ -515,13 +599,14 @@ export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound 
   return (
     <AbsoluteFill style={{ background: L.canvas }}>
       <Noise />
+      <Gameplay />
 
       {/* Canvas headlines */}
       <div style={{ position: "absolute", top: 330, left: 90, right: 90 }}>
         <Words text={"Який шанс вибити ніж у\u00A0CS2?"} at={6} size={124} stagger={3} mark="ніж" exit={LT.hookOut} />
       </div>
       <div style={{ position: "absolute", top: 230, left: 80, right: 80 }}>
-        <Words text="Або будь-який ніж. Безкоштовно." at={LT.appIn + 4} size={70} stagger={2} mark="Безкоштовно." exit={LT.outroIn - 4} />
+        <Words text="Або будь-який ніж. Безкоштовно." at={LT.appIn + 4} size={70} stagger={2} mark="Безкоштовно." exit={LT.handoff - 4} />
       </div>
 
       <Shape keys={SHAPE}>
@@ -548,7 +633,7 @@ export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound 
             Або…
           </div>
         </Layer>
-        <Layer from={LT.appIn + 4} to={LT.outroIn - 2} w={APP_W} h={APP_H}>
+        <Layer from={LT.appIn + 4} to={LT.handoff - 2} w={APP_W} h={APP_H}>
           <AppCard />
         </Layer>
         <Layer from={LT.outroIn + 2} w={900} h={1060}>
@@ -572,6 +657,7 @@ export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound 
           [LT.appIn + 24, LT.click3 + 24],
         ]}
       />
+      <FlyingKnife />
       {withSound ? <LightSoundTrack /> : null}
     </AbsoluteFill>
   );

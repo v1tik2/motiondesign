@@ -13,6 +13,7 @@ const CHAPTERS = [
   { name: "Шанси", from: LT.oddsIn },
   { name: "1 з 385", from: LT.gridIn },
   { name: "Або… CSHUNTER", from: LT.orIn },
+  { name: "Геймплей", from: LT.handoff },
   { name: "Фінал", from: LT.outroIn },
 ];
 
