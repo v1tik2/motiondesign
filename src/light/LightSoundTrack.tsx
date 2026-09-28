@@ -21,7 +21,7 @@ const morphs = [LT.rouletteIn, LT.oddsIn, LT.bigNumber, LT.gridIn, LT.orIn, LT.o
 // Every event has its own sound; series play as a pentatonic melody, never one repeated blip.
 const cues = (): Cue[] => [
   // hook
-  { at: 4, sfx: "thud", vol: 0.3 },
+  { at: 3, sfx: "swish", vol: 0.4 },
   ...[0, 2, 4, 5, 7].map((n, i) => ({ at: 6 + i * 3, sfx: `note_${n}`, vol: 0.2 })),
   { at: 23, sfx: "scribble", vol: 0.35 },
   ...morphs.map((f) => ({ at: f - 2, sfx: "swish", vol: 0.3 })),

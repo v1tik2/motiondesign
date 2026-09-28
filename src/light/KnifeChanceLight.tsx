@@ -10,9 +10,8 @@ import { LightSoundTrack } from "./LightSoundTrack";
 
 
 const SHAPE: ShapeKey[] = [
-  { t: 0, cx: 540, cy: 1230, w: 120, h: 120, r: 60 },
-  { t: 4, cx: 540, cy: 1230, w: 820, h: 600, r: 56 },
-  { t: LT.caseIn, cx: 540, cy: 1000, w: 860, h: 960, r: 56 },
+  { t: 0, cx: 540, cy: 1250, w: 0, h: 0, r: 0, o: 0 },
+  { t: LT.caseIn - 4, cx: 540, cy: 1000, w: 860, h: 960, r: 56, o: 1 },
   { t: LT.rouletteIn, cx: 540, cy: 1000, w: 1000, h: 440, r: 44 },
   { t: LT.oddsIn, cx: 540, cy: 1000, w: 920, h: 1040, r: 48 },
   { t: LT.bigNumber, cx: 540, cy: 1000, w: 820, h: 560, r: 56 },
@@ -26,22 +25,29 @@ const SHAPE: ShapeKey[] = [
 
 // ───────────────────────────── hook ─────────────────────────────
 
-const HookCard: React.FC = () => {
+// Pre-rendered 3D Butterfly | Fade spin (public/butterfly/*.webp, from the ButterflySpin composition).
+const SPIN_FRAMES = 86;
+const HookKnife: React.FC = () => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  if (frame > LT.caseIn + 4) return null;
+  const inn = spring({ frame: frame - 2, fps, config: { damping: 15, mass: 0.8, stiffness: 120 } });
+  const out = interpolate(frame, [LT.hookOut - 6, LT.caseIn + 2], [0, 1], { ...clamp, easing: Easing.in(Easing.cubic) });
+  const idx = Math.min(SPIN_FRAMES - 1, frame);
   return (
-    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 18 }}>
-      <Img
-        src={asset("skins/weapon_knife_karambit-418.png")}
-        style={{
-          width: 640,
-          transform: `translateY(${Math.sin(frame / 16) * 10}px) rotate(${-6 + Math.sin(frame / 22) * 3}deg)`,
-          filter: "drop-shadow(0 24px 30px rgba(20,18,14,.22))",
-        }}
-      />
-      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-        <span style={{ width: 16, height: 16, borderRadius: 8, background: L.rare }} />
-        <Label color={L.ink}>★ Karambit | Doppler</Label>
-      </div>
+    <div
+      style={{
+        position: "absolute",
+        left: 540 - 560,
+        top: 1250 - 560,
+        width: 1120,
+        height: 1120,
+        opacity: Math.min(1, inn * 1.5) * (1 - out),
+        transform: `translateY(${(1 - inn) * 200 - out * 120 + Math.sin(frame / 18) * 10}px) rotate(${-38 + (1 - inn) * -40}deg) scale(${0.7 + 0.3 * inn - 0.2 * out})`,
+        filter: `blur(${out * 10}px) drop-shadow(0 40px 40px rgba(20,18,14,.18))`,
+      }}
+    >
+      <Img src={asset(`butterfly/${String(idx).padStart(2, "0")}.webp`)} style={{ width: "100%", height: "100%" }} />
     </div>
   );
 };
@@ -584,10 +590,8 @@ export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound 
         <Words text="Або будь-який ніж. Безкоштовно." at={LT.appIn + 4} size={70} stagger={2} mark="Безкоштовно." exit={LT.handoff - 4} />
       </div>
 
+      <HookKnife />
       <Shape keys={SHAPE}>
-        <Layer from={6} to={LT.caseIn - 2} w={820} h={600}>
-          <HookCard />
-        </Layer>
         <Layer from={LT.caseIn + 2} to={LT.rouletteIn - 2} w={CASE_W} h={CASE_H}>
           <CaseCard />
         </Layer>
