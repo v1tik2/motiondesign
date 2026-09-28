@@ -264,6 +264,123 @@ def cash():
 
 # ───────────────────────────── music bed ─────────────────────────────
 
+# ───────────────────── unique UI palette (light reel) ─────────────────────
+
+PENTA = [440.0, 523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66, 1318.51, 1567.98]  # A minor pentatonic
+
+
+def marimba(freq, dur=0.5):
+    """Soft wooden mallet note."""
+    x = t(dur)
+    n = len(x)
+    y = np.sin(2 * np.pi * freq * x) * env(n, 0.001, dur * 0.7, 4)
+    y += 0.35 * np.sin(2 * np.pi * freq * 3.99 * x) * env(n, 0.001, 0.06, 5)
+    y += 0.12 * np.sin(2 * np.pi * freq * 9.8 * x) * env(n, 0.0005, 0.02, 5)
+    return norm(y, 0.55)
+
+
+def bubble(freq):
+    """Rising water-drop plop."""
+    dur = 0.16
+    x = t(dur)
+    f = freq * (1 + 0.9 * (x / dur) ** 1.5)
+    y = np.sin(2 * np.pi * np.cumsum(f) / SR) * env(len(x), 0.002, 0.1, 4)
+    return norm(y, 0.5)
+
+
+def knock(freq=180):
+    """Woody stop knock (roulette lands)."""
+    n = int(0.3 * SR)
+    x = t(0.3)
+    body = np.sin(2 * np.pi * freq * x) * env(n, 0.001, 0.12, 5)
+    body += 0.5 * np.sin(2 * np.pi * freq * 2.3 * x) * env(n, 0.001, 0.05, 5)
+    tap = bp(noise(n), 800, 4000) * env(n, 0.0005, 0.015, 6) * 0.6
+    return norm(body + tap, 0.6)
+
+
+def thud():
+    """Soft box landing."""
+    n = int(0.45 * SR)
+    x = t(0.45)
+    f = 70 + 60 * np.exp(-x * 25)
+    y = np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, 0.002, 0.25, 4)
+    y += lp(noise(n), 900) * env(n, 0.001, 0.05, 5) * 0.6
+    return norm(y, 0.6)
+
+
+def latch():
+    """Case latch: two metallic clicks and a short creak."""
+    n = int(0.5 * SR)
+    y = np.zeros(n)
+    for at, f in ((0.0, 3400), (0.07, 2800)):
+        s0 = int(at * SR)
+        ln = int(0.05 * SR)
+        xx = np.arange(ln) / SR
+        seg = (np.sin(2 * np.pi * f * xx) + 0.6 * np.sin(2 * np.pi * f * 1.51 * xx)) * env(ln, 0.0003, 0.02, 6)
+        seg += hp(noise(ln), 3000) * env(ln, 0.0002, 0.004, 6)
+        y[s0:s0 + ln] += seg
+    s0 = int(0.14 * SR)
+    ln = int(0.3 * SR)
+    xx = np.arange(ln) / SR
+    creak = bp(np.sign(np.sin(2 * np.pi * (60 + 25 * np.sin(xx * 30)) * xx)) * 0.5 + noise(ln) * 0.3, 400, 2200)
+    y[s0:s0 + ln] += creak * env(ln, 0.02, 0.25, 3) * 0.35
+    return norm(y, 0.6)
+
+
+def scribble():
+    """Highlighter swipe."""
+    n = int(0.28 * SR)
+    y = bp(noise(n), 2500, 7000) * (np.sin(np.linspace(0, np.pi, n)) ** 1.5)
+    y *= 0.7 + 0.3 * np.sin(np.arange(n) / SR * 2 * np.pi * 38)
+    return norm(y, 0.35)
+
+
+def rain(dur=1.0):
+    """Tiny sparkle grains for the grid filling in."""
+    n = int(dur * SR)
+    y = np.zeros(n)
+    for _ in range(90):
+        s0 = int(rng.uniform(0, dur * 0.85) * SR)
+        f = rng.choice(PENTA) * rng.choice([2, 4])
+        ln = int(0.04 * SR)
+        seg = np.sin(2 * np.pi * f * np.arange(ln) / SR) * env(ln, 0.0005, 0.025, 5)
+        y[s0:s0 + ln] += seg[: n - s0] * rng.uniform(0.05, 0.2)
+    return norm(y * np.linspace(1, 0.4, n), 0.4)
+
+
+def chime():
+    """Glass chime for the big number."""
+    dur = 1.6
+    x = t(dur)
+    n = len(x)
+    y = sum(a * np.sin(2 * np.pi * f * x) * env(n, 0.002, dur * d, 3.5) for f, a, d in ((1760, 1, 1), (2637, 0.5, 0.7), (3520, 0.25, 0.4)))
+    return norm(y, 0.5)
+
+
+def select():
+    """Two-tone UI select blip."""
+    y = np.concatenate([marimba(1046.5, 0.09), marimba(1567.98, 0.25)])
+    return norm(y, 0.5)
+
+
+def success():
+    """Rising major arpeggio for 'Equipped'."""
+    notes = [523.25, 659.25, 783.99, 1046.5]
+    out = np.zeros(int(0.9 * SR))
+    for i, f in enumerate(notes):
+        s0 = int(i * 0.06 * SR)
+        m = marimba(f, 0.6)
+        out[s0:s0 + len(m)] += m[: len(out) - s0] * (0.8 + 0.1 * i)
+    return norm(out, 0.55)
+
+
+def tick_var(freq):
+    n = int(0.04 * SR)
+    x = t(0.04)
+    y = np.sin(2 * np.pi * freq * x) * env(n, 0.0003, 0.01, 6) + hp(noise(n), 4000) * env(n, 0.0002, 0.004, 6) * 0.3
+    return norm(y, 0.5)
+
+
 def music(drop_frame=585, gap_frame=570, total_frames=TOTAL_FRAMES, soft=False):
     """Bed: tension build (hook→stats), silence on 'АБО...', drop, outro."""
     TOTAL = total_frames
@@ -399,3 +516,17 @@ if __name__ == "__main__":
     save("click", click())
     save("swish", stereo(soft_whoosh(), 0.01))
     save("music_light", music(drop_frame=510, gap_frame=482, total_frames=780, soft=True))
+    for i, f in enumerate(PENTA):
+        save(f"note_{i}", marimba(f))
+    for i, f in enumerate([520, 600, 680, 760, 860, 960]):
+        save(f"bubble_{i}", bubble(f))
+    for i, f in enumerate([2300, 2500, 2700, 2900]):
+        save(f"tick_{i}", tick_var(f))
+    save("knock", knock())
+    save("thud", thud())
+    save("latch", latch())
+    save("scribble", scribble())
+    save("rain", stereo(rain(), 0.012))
+    save("chime", stereo(chime(), 0.015))
+    save("select", select())
+    save("success", stereo(success(), 0.01))
