@@ -1,5 +1,6 @@
+import { asset } from "./asset";
 import { loadFont } from "@remotion/fonts";
-import { staticFile } from "remotion";
+
 
 export const FPS = 30;
 export const WIDTH = 1080;
@@ -24,14 +25,14 @@ export const C = {
   bg2: "#0E1018",
   white: "#F4F5F8",
   dim: "#8A8FA3",
-  gold: "#FFC93C",
+  gold: "#FAC116",
   goldDeep: "#E4AE39",
   accent: "#FF4A1C",
   milspec: "#4B69FF",
   restricted: "#8847FF",
   classified: "#D32CE6",
   covert: "#EB4B4B",
-  rare: "#FFC93C",
+  rare: "#FAC116",
 };
 
 export const DISPLAY = "Unbounded";
@@ -48,6 +49,8 @@ const fonts: [string, string, string][] = [
   [BODY, "800", "inter-cyrillic-800-normal.woff2"],
 ];
 
-for (const [family, weight, file] of fonts) {
-  loadFont({ family, weight, url: staticFile(`fonts/${file}`) });
-}
+export const loadFonts = () => {
+  for (const [family, weight, file] of fonts) {
+    loadFont({ family, weight, format: "woff2", url: asset(`fonts/${file}`) });
+  }
+};

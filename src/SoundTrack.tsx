@@ -1,5 +1,6 @@
+import { asset } from "./asset";
 import React from "react";
-import { Audio, Sequence, staticFile } from "remotion";
+import {Audio, Sequence} from "remotion";
 import { HOOK_HITS } from "./scenes/Hook";
 import { SPIN_END, rouletteTicks } from "./scenes/Roulette";
 import { ODDS_FOCUS, ODDS_ROW_AT } from "./scenes/Odds";
@@ -66,10 +67,10 @@ const cues: Cue[] = [
 
 export const SoundTrack: React.FC = () => (
   <>
-    <Audio src={staticFile("sfx/music.wav")} volume={0.75} />
+    <Audio src={asset("sfx/music.wav")} volume={0.75} />
     {cues.map((c, i) => (
       <Sequence key={i} from={c.at} durationInFrames={LEN[c.sfx]} layout="none">
-        <Audio src={staticFile(`sfx/${c.sfx}.wav`)} volume={c.vol ?? 1} />
+        <Audio src={asset(`sfx/${c.sfx}.wav`)} volume={c.vol ?? 1} />
       </Sequence>
     ))}
   </>

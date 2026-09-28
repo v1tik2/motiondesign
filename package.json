@@ -6,6 +6,7 @@
   "scripts": {
     "studio": "remotion studio",
     "render": "remotion render KnifeChance out/knife-chance.mp4",
+    "preview": "node scripts/build-preview.mjs",
     "still": "remotion still KnifeChance out/frame.png"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
+import { asset } from "../asset";
 import React from "react";
-import { AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame } from "remotion";
+import {AbsoluteFill, Easing, Img, interpolate, useCurrentFrame} from "remotion";
 import { Background, Flash, clamp, usePop, useShake } from "../components/fx";
 import { Stamp } from "../components/text";
 import { C, DISPLAY } from "../theme";
@@ -80,7 +81,7 @@ export const Roulette: React.FC = () => {
       {/* Case */}
       <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
         <Img
-          src={staticFile("cases/crate_community_default_png.png")}
+          src={asset("cases/crate_community_default_png.png")}
           style={{
             width: 620,
             transform: `translateY(${-80 + (1 - caseIn) * -900}px) rotate(${caseShake}deg) scale(${1 + (1 - caseOpen) * 0.6})`,
@@ -119,7 +120,7 @@ export const Roulette: React.FC = () => {
               }}
             >
               <Img
-                src={staticFile(isKnife ? "cases/default_rare_item_png.png" : `skins/${it.img}.png`)}
+                src={asset(isKnife ? "cases/default_rare_item_png.png" : `skins/${it.img}.png`)}
                 style={{ width: "100%", height: 250, objectFit: "contain", padding: 16 }}
               />
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 14, background: col, boxShadow: `0 0 20px ${col}` }} />

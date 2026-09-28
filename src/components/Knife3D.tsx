@@ -1,6 +1,7 @@
+import { asset } from "../asset";
 import React, { useEffect, useMemo, useState } from "react";
 import { ThreeCanvas } from "@remotion/three";
-import { continueRender, delayRender, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import {continueRender, delayRender, useCurrentFrame, useVideoConfig} from "remotion";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
@@ -8,10 +9,6 @@ import { useThree } from "@react-three/fiber";
 
 export type Skin = { map: string; metal?: string };
 
-// The web preview host only serves whitelisted extensions, so it re-publishes
-// .glb/.hdr with an extra suffix; the Remotion renderer leaves this empty.
-const bin = (path: string) =>
-  staticFile(path + ((window as unknown as { remotion_binSuffix?: string }).remotion_binSuffix ?? ""));
 
 type Props = {
   model: string; // file in public/models
@@ -26,7 +23,7 @@ type Props = {
 const loadTex = (loader: THREE.TextureLoader, url: string, srgb: boolean) =>
   new Promise<THREE.Texture>((res, rej) =>
     loader.load(
-      staticFile(url),
+      asset(url),
       (t) => {
         t.flipY = false;
         t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -50,7 +47,7 @@ const useAssets = (model: string, skins: Skin[]) => {
     const tl = new THREE.TextureLoader();
     Promise.all([
       new Promise<THREE.Group>((res, rej) =>
-        new GLTFLoader().load(bin(`models/${model}`), (g) => res(g.scene), undefined, rej),
+        new GLTFLoader().load(asset(`models/${model}`), (g) => res(g.scene), undefined, rej),
       ),
       Promise.all(
         skins.map(async (s) => ({
@@ -86,7 +83,7 @@ const Env: React.FC = () => {
   useEffect(() => {
     const pmrem = new THREE.PMREMGenerator(gl);
     new RGBELoader().load(
-      bin("environment.hdr"),
+      asset("environment.hdr"),
       (t) => {
         scene.environment = pmrem.fromEquirectangular(t).texture;
         t.dispose();
@@ -144,6 +141,7 @@ export const Knife3D: React.FC<Props> = (props) => {
       width={width}
       height={height}
       camera={{ position: [0, 0, 16], fov: 38 }}
+      dpr={window.__previewDpr ?? 1}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, preserveDrawingBuffer: true }}
     >
       <Env />

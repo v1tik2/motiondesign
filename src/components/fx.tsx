@@ -1,3 +1,4 @@
+import { asset } from "../asset";
 import React from "react";
 import {
   AbsoluteFill,
@@ -97,14 +98,14 @@ const Particles: React.FC<{ color: string }> = ({ color }) => {
 const Grain: React.FC = () => {
   const frame = useCurrentFrame();
   return (
-    <AbsoluteFill style={{ opacity: 0.07, mixBlendMode: "overlay" }}>
-      <svg width="100%" height="100%">
-        <filter id="grain">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed={frame % 12} />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#grain)" />
-      </svg>
-    </AbsoluteFill>
+    <AbsoluteFill
+      style={{
+        opacity: 0.08,
+        mixBlendMode: "overlay",
+        backgroundImage: `url(${asset("noise.png")})`,
+        backgroundPosition: `${Math.floor(random(`gx${frame % 12}`) * 256)}px ${Math.floor(random(`gy${frame % 12}`) * 256)}px`,
+      }}
+    />
   );
 };
 

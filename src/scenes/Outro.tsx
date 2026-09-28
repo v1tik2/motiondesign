@@ -1,5 +1,6 @@
+import { asset } from "../asset";
 import React from "react";
-import { AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import {AbsoluteFill, Img, interpolate, spring, useCurrentFrame, useVideoConfig} from "remotion";
 import { BRAND } from "../brand";
 import { Background, Flash, clamp, useShake } from "../components/fx";
 import { LogoMark, Wordmark } from "../components/Logo";
@@ -34,7 +35,7 @@ export const Outro: React.FC = () => {
       {FLOATERS.map((f, i) => (
         <Img
           key={f.src}
-          src={staticFile(f.src)}
+          src={asset(f.src)}
           style={{
             position: "absolute",
             left: f.x,
@@ -47,11 +48,11 @@ export const Outro: React.FC = () => {
         />
       ))}
 
-      <AbsoluteFill style={{ top: 330, alignItems: "center" }}>
+      <AbsoluteFill style={{ top: 290, alignItems: "center" }}>
         <div style={{ transform: `scale(${interpolate(logo, [0, 1], [2.6, 1])}) rotate(${(1 - logo) * -90}deg)`, opacity: Math.min(1, logo * 2) }}>
-          <LogoMark size={230} draw={interpolate(frame, [0, 18], [0, 1], clamp)} />
+          <LogoMark size={300} draw={interpolate(frame, [0, 18], [0, 1], clamp)} />
         </div>
-        <div style={{ marginTop: 30, transform: `scale(${interpolate(logo, [0, 1], [0.4, 1])})`, opacity: logo }}>
+        <div style={{ marginTop: 6, transform: `scale(${interpolate(logo, [0, 1], [0.4, 1])})`, opacity: logo }}>
           <Wordmark size={128} />
         </div>
         <div

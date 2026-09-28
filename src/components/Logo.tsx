@@ -1,5 +1,6 @@
+import { asset } from "../asset";
 import React from "react";
-import { Img, interpolate, staticFile, useCurrentFrame } from "remotion";
+import {Img, interpolate, useCurrentFrame} from "remotion";
 import { BRAND } from "../brand";
 import { C, DISPLAY } from "../theme";
 
@@ -7,7 +8,12 @@ import { C, DISPLAY } from "../theme";
 export const LogoMark: React.FC<{ size: number; draw?: number }> = ({ size, draw = 1 }) => {
   const frame = useCurrentFrame();
   if (BRAND.logoFile) {
-    return <Img src={staticFile(BRAND.logoFile)} style={{ width: size, height: size, objectFit: "contain" }} />;
+    return (
+      <Img
+        src={asset(BRAND.logoFile)}
+        style={{ width: size, height: size, objectFit: "contain", filter: `drop-shadow(0 0 ${24 * draw}px ${C.gold}aa)` }}
+      />
+    );
   }
   const r = 42;
   const circ = 2 * Math.PI * r;

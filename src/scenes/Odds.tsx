@@ -1,5 +1,6 @@
+import { asset } from "../asset";
 import React from "react";
-import { AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import {AbsoluteFill, Img, interpolate, spring, useCurrentFrame, useVideoConfig} from "remotion";
 import { ODDS } from "../brand";
 import { Background, Flash, clamp, useShake } from "../components/fx";
 import { Counter, Slam } from "../components/text";
@@ -79,7 +80,7 @@ export const Odds: React.FC = () => {
                   flexShrink: 0,
                 }}
               >
-                <Img src={staticFile(ICON[o.key])} style={{ width: 180, height: 130, objectFit: "contain" }} />
+                <Img src={asset(ICON[o.key])} style={{ width: 180, height: 130, objectFit: "contain" }} />
               </div>
               <div style={{ flex: 1, position: "relative", height: 150 }}>
                 {isRare ? (

@@ -1,8 +1,9 @@
 import React from "react";
 import { Composition } from "remotion";
-import "./theme";
-import { FPS, HEIGHT, TOTAL, WIDTH } from "./theme";
+import { FPS, HEIGHT, TOTAL, WIDTH, loadFonts } from "./theme";
 import { KnifeChance } from "./KnifeChance";
+
+loadFonts();
 
 export const RemotionRoot: React.FC = () => (
   <>

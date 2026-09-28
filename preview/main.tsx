@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Player, PlayerRef } from "@remotion/player";
 import { KnifeChance } from "../src/KnifeChance";
-import { FPS, HEIGHT, T, TOTAL, WIDTH } from "../src/theme";
+import { FPS, HEIGHT, T, TOTAL, WIDTH, loadFonts } from "../src/theme";
+import manifest from "./manifest.json";
 
 const CHAPTERS = [
   { name: "Хук", from: T.hook.from },
@@ -93,4 +94,45 @@ const App: React.FC = () => {
   );
 };
 
-createRoot(document.getElementById("app")!).render(<App />);
+// Fetch every asset once into blob: URLs so the sandboxed page never loads by path.
+const preload = async (onProgress: (p: number) => void) => {
+  const entries = Object.entries(manifest as Record<string, string>);
+  const map: Record<string, string> = {};
+  let done = 0;
+  await Promise.all(
+    entries.map(async ([key, file]) => {
+      const res = await fetch(file);
+      if (!res.ok) throw new Error(`${file}: ${res.status}`);
+      map[key] = URL.createObjectURL(await res.blob());
+      onProgress(++done / entries.length);
+    }),
+  );
+  window.__assets = map;
+};
+
+const Loader: React.FC = () => {
+  const [p, setP] = useState(0);
+  const [err, setErr] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    window.__previewDpr = 0.5;
+    preload(setP)
+      .then(() => {
+        loadFonts();
+        return document.fonts.ready;
+      })
+      .then(() => setReady(true))
+      .catch((e) => setErr(String(e)));
+  }, []);
+  if (ready) return <App />;
+  return (
+    <div className="stage">
+      <div className="phone loading">
+        <div className="bar"><i style={{ width: `${Math.round(p * 100)}%` }} /></div>
+        <span>{err ? `Не вдалося завантажити: ${err}` : `Завантажую скіни, 3D і звук… ${Math.round(p * 100)}%`}</span>
+      </div>
+    </div>
+  );
+};
+
+createRoot(document.getElementById("app")!).render(<Loader />);

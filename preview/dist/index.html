@@ -10,7 +10,7 @@
     --line: #232737;
     --text: #F4F5F8;
     --muted: #8A8FA3;
-    --gold: #FFC93C;
+    --gold: #FAC116;
     --ink-on-gold: #1A1200;
   }
   html, body { background: var(--ground); }
@@ -68,6 +68,9 @@
   .note { margin: 0; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 12px; }
   .note b { color: var(--text); font-weight: 600; }
 
+  .loading { display: grid; place-content: center; gap: 14px; padding: 24px; text-align: center; color: var(--muted); font-size: 14px; }
+  .bar { width: 220px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 0 auto; }
+  .bar i { display: block; height: 100%; background: var(--gold); transition: width .15s; }
   @media (max-width: 720px) {
     .stage { flex-direction: column; align-items: stretch; }
     .phone { height: auto; width: 100%; }
@@ -81,8 +84,7 @@
     <p class="sub">Живе прев’ю рілса для CSHUNTER. 3D-ножі й звук рахуються прямо у браузері, тож тут видно кожну правку без рендеру. Натисни ▶, щоб увімкнути звук.</p>
   </header>
   <div id="app"></div>
-  <p class="note"><b>Лого — тимчасова заглушка.</b> Надішли PNG логотипу й фірмові кольори, і я підставлю їх. Музика та всі звуки синтезовані з нуля, без чужих семплів.</p>
+  <p class="note">3D у прев’ю рахується в половинній роздільності, щоб не гальмувало. У фінальному MP4 все в повній якості. Музика та всі звуки синтезовані з нуля, без чужих семплів.</p>
 </div>
 
-<script>window.remotion_staticBase = "."; window.remotion_binSuffix = ".wasm";</script>
 <script src="app.js"></script>
