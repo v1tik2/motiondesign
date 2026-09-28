@@ -5,7 +5,7 @@ export const BRAND = {
   // Drop the real logo into public/logo.png and set this to "logo.png".
   // While null, a built-in crosshair mark is drawn instead.
   logoFile: "logo.png" as string | null,
-  modes: ["DM", "DUELS", "BHOP", "SURF", "AWP", "ARENA", "KZ", "CLUTCH", "RETAKE", "2V2", "5V5"],
+  modes: ["DM", "DUELS", "BHOP", "SURF", "AWP", "ARENA", "KZ", "CLUTCH", "RETAKE"],
 };
 
 // Valve's officially disclosed case odds (unchanged from CS:GO to CS2).

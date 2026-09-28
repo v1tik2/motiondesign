@@ -42,6 +42,6 @@ export const LT = {
   click3: 598,
   handoff: 612, // knife flies to the corner, gameplay video starts
   videoFrames: 260, // gameplay.mp4 is 8.69 s
-  outroIn: 792,
-  total: 932,
+  outroIn: 750, // 25 s
+  total: 900,
 };

@@ -8,8 +8,6 @@ import { LightSoundTrack } from "./LightSoundTrack";
 
 // ───────────────────────────── shape path ─────────────────────────────
 
-// Corner card the equipped knife lands on while the gameplay plays.
-const BADGE = { cx: 250, cy: 1470, w: 400, h: 270 };
 
 const SHAPE: ShapeKey[] = [
   { t: 0, cx: 540, cy: 1230, w: 120, h: 120, r: 60 },
@@ -21,8 +19,9 @@ const SHAPE: ShapeKey[] = [
   { t: LT.gridIn, cx: 540, cy: 1000, w: 920, h: 1160, r: 48 },
   { t: LT.orIn, cx: 540, cy: 1000, w: 340, h: 132, r: 66, dark: 1 },
   { t: LT.appIn, cx: 540, cy: 1010, w: 960, h: 1180, r: 44, dark: 0 },
-  { t: LT.handoff, cx: BADGE.cx, cy: BADGE.cy, w: BADGE.w, h: BADGE.h, r: 36, dark: 0 },
-  { t: LT.outroIn, cx: 540, cy: 1000, w: 900, h: 1060, r: 56, dark: 0 },
+  // Window collapses toward the bottom-right corner, following the knife out.
+  { t: LT.handoff, cx: 900, cy: 1760, w: 0, h: 0, r: 0, dark: 0, o: 0 },
+  { t: LT.outroIn, cx: 540, cy: 1000, w: 900, h: 1060, r: 56, dark: 0, o: 1 },
 ];
 
 // ───────────────────────────── hook ─────────────────────────────
@@ -63,16 +62,13 @@ const CaseCard: React.FC = () => {
         src={asset("cases/crate_community_default_png.png")}
         style={{
           position: "absolute",
-          left: (CASE_W - 560) / 2,
-          top: 170,
-          width: 560,
+          left: (CASE_W - 640) / 2,
+          top: 150,
+          width: 640,
           transform: `rotate(${shake}deg) translateY(${Math.sin(frame / 18) * 6}px)`,
           filter: "drop-shadow(0 24px 30px rgba(20,18,14,.22))",
         }}
       />
-      <div style={{ position: "absolute", top: 610, width: "100%", textAlign: "center", fontFamily: L.sans, fontWeight: 650, fontSize: 64, letterSpacing: "-0.04em", color: L.ink }}>
-        Відкриваємо кейс
-      </div>
       <div
         style={{
           position: "absolute",
@@ -364,7 +360,9 @@ const AppCard: React.FC = () => {
       {/* header */}
       <div style={{ position: "absolute", left: 48, right: 48, top: 36, height: 80, display: "flex", alignItems: "center", gap: 18 }}>
         <Img src={asset(BRAND.logoFile ?? "logo.png")} style={{ height: 64 }} />
-        <span style={{ fontFamily: L.sans, fontWeight: 700, fontSize: 40, letterSpacing: "-0.04em", color: L.ink }}>CSHUNTER</span>
+        <span style={{ fontFamily: L.sans, fontWeight: 700, fontSize: 40, letterSpacing: "-0.04em", color: L.ink }}>
+          CSHUNTER <span style={{ fontWeight: 500, color: L.muted }}>Skinchanger</span>
+        </span>
         <span style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
           {[0, 1, 2].map((d) => (
             <span key={d} style={{ width: 14, height: 14, borderRadius: 7, background: L.line }} />
@@ -541,54 +539,31 @@ const Gameplay: React.FC = () => {
   );
 };
 
-// The equipped knife travels from its tile to the corner card, then leaves with it.
+// The equipped knife leaves its tile and flies out through the bottom-right corner,
+// where the gameplay's knife appears in hand.
 const FlyingKnife: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  if (frame < LT.handoff || frame > LT.outroIn + 10) return null;
+  const end = LT.handoff + 16;
+  if (frame < LT.handoff - 1 || frame > end) return null;
   const t0 = tileCenter(0);
-  const cfg = { damping: 20, mass: 1, stiffness: 110 };
-  const x = track(frame, fps, [[0, t0.x], [LT.handoff, BADGE.cx]], cfg);
-  const y = track(frame, fps, [[0, t0.y - 30], [LT.handoff, BADGE.cy - 30]], cfg);
-  const w = track(frame, fps, [[0, TILE.w - 60], [LT.handoff, 320]], cfg);
-  const rot = track(frame, fps, [[0, 0], [LT.handoff, -8]], cfg) + Math.sin((frame - LT.handoff) / 20) * 2;
-  const out = interpolate(frame, [LT.outroIn - 6, LT.outroIn + 6], [1, 0], clamp);
-  const label = interpolate(frame, [LT.handoff + 16, LT.handoff + 26], [0, 1], clamp) * out;
+  const p = interpolate(frame, [LT.handoff + 2, end], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
+  const lift = interpolate(frame, [LT.handoff - 1, LT.handoff + 6], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const x = t0.x + (1250 - t0.x) * p;
+  const y = t0.y - 30 - 40 * lift + (2150 - t0.y) * p * p;
+  const w = (TILE.w - 60) * (1 + 0.15 * lift + 1.4 * p);
   return (
-    <>
-      <Img
-        src={asset("skins/weapon_knife_karambit-38.png")}
-        style={{
-          position: "absolute",
-          left: x - w / 2,
-          top: y - w * 0.36,
-          width: w,
-          transform: `rotate(${rot}deg)`,
-          opacity: out,
-          filter: "drop-shadow(0 16px 20px rgba(20,18,14,.25))",
-          zIndex: 20,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: BADGE.cx - BADGE.w / 2,
-          top: BADGE.cy + BADGE.h / 2 - 66,
-          width: BADGE.w,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 10,
-          opacity: label,
-          zIndex: 21,
-        }}
-      >
-        <span style={{ width: 30, height: 30, borderRadius: 15, background: L.ink, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" stroke={L.accent} strokeWidth="3.4" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </span>
-        <span style={{ fontFamily: L.sans, fontWeight: 600, fontSize: 28, color: L.ink, letterSpacing: "-0.02em" }}>Karambit | Fade</span>
-      </div>
-    </>
+    <Img
+      src={asset("skins/weapon_knife_karambit-38.png")}
+      style={{
+        position: "absolute",
+        left: x - w / 2,
+        top: y - w * 0.36,
+        width: w,
+        transform: `rotate(${-10 * lift + 35 * p}deg)`,
+        filter: `drop-shadow(0 20px 26px rgba(20,18,14,.3)) blur(${p * 6}px)`,
+        zIndex: 20,
+      }}
+    />
   );
 };
 
@@ -654,7 +629,7 @@ export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound 
         clicks={[LT.click1, LT.click2, LT.click3]}
         show={[
           [92, LT.click1 + 22],
-          [LT.appIn + 24, LT.click3 + 24],
+          [LT.appIn + 24, LT.handoff],
         ]}
       />
       <FlyingKnife />

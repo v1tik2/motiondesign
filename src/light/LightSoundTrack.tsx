@@ -48,8 +48,7 @@ const cues = (): Cue[] => [
   { at: LT.click3, sfx: "click", vol: 0.8 },
   { at: LT.click3 + 1, sfx: "success", vol: 0.4 },
   // handoff
-  { at: LT.handoff - 2, sfx: "swish", vol: 0.4 },
-  { at: LT.handoff + 18, sfx: "knock", vol: 0.3 },
+  { at: LT.handoff + 4, sfx: "swish", vol: 0.45 },
   // outro
   { at: LT.outroIn + 4, sfx: "impact", vol: 0.4 },
   { at: LT.outroIn + 16, sfx: "chime", vol: 0.22 },

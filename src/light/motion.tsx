@@ -28,13 +28,13 @@ export const useSpring = (at: number, cfg: Cfg = FAST) => {
   return frame < at ? 0 : spring({ frame: frame - at, fps, config: cfg });
 };
 
-export type ShapeKey = { t: number; cx: number; cy: number; w: number; h: number; r: number; dark?: number };
+export type ShapeKey = { t: number; cx: number; cy: number; w: number; h: number; r: number; dark?: number; o?: number };
 
 // The one continuous shape. Children are absolutely positioned layers centered on it.
 export const Shape: React.FC<{ keys: ShapeKey[]; children: React.ReactNode }> = ({ keys, children }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const k = (f: keyof ShapeKey) => keys.map((s) => [s.t, (s[f] as number) ?? 0] as [number, number]);
+  const k = (f: keyof ShapeKey, d = 0) => keys.map((s) => [s.t, (s[f] as number) ?? d] as [number, number]);
   const cx = track(frame, fps, k("cx"));
   const cy = track(frame, fps, k("cy"));
   // Leading/trailing edges ride different springs so the shape stretches as it moves.
@@ -43,6 +43,8 @@ export const Shape: React.FC<{ keys: ShapeKey[]; children: React.ReactNode }> = 
   const r = track(frame, fps, k("r"));
   const dark = Math.min(1, Math.max(0, track(frame, fps, k("dark"), FAST)));
   const bg = interpolateColors(dark, [0, 1], [L.card, L.ink]);
+  const opacity = Math.min(1, Math.max(0, track(frame, fps, k("o", 1), FAST)));
+  if (opacity <= 0.01) return null;
   return (
     <div
       style={{
@@ -53,6 +55,7 @@ export const Shape: React.FC<{ keys: ShapeKey[]; children: React.ReactNode }> = 
         height: h,
         borderRadius: Math.min(r, h / 2, w / 2),
         background: bg,
+        opacity,
         overflow: "hidden",
         isolation: "isolate",
         boxShadow: "0 2px 4px rgba(20,18,14,.06), 0 30px 80px -20px rgba(20,18,14,.28)",

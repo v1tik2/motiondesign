@@ -496,7 +496,7 @@ def music(drop_frame=585, gap_frame=570, total_frames=TOTAL_FRAMES, soft=False):
     return norm(mix, 0.8)
 
 
-def music_light(total_frames=932, gap_frame=480, drop_frame=510):
+def music_light(total_frames=900, gap_frame=480, drop_frame=510):
     """Continuous 120 BPM bed for the light reel. Everything sits on the beat grid:
     one steady groove, crossfaded chords, a soft arpeggio, a clean on-beat stop
     for 'Або…' and a drop in the same tempo (no half-time switch)."""
