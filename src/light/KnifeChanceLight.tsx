@@ -522,7 +522,7 @@ export const KnifeChanceLight: React.FC<{ withSound?: boolean }> = ({ withSound 
 
       {/* Canvas headlines */}
       <div style={{ position: "absolute", top: 330, left: 90, right: 90 }}>
-        <Words text="Який шанс вибити ніж у\u00A0CS2?" at={6} size={124} stagger={3} mark="ніж" exit={LT.hookOut} />
+        <Words text={"Який шанс вибити ніж у\u00A0CS2?"} at={6} size={124} stagger={3} mark="ніж" exit={LT.hookOut} />
       </div>
       <div style={{ position: "absolute", top: 230, left: 80, right: 80 }}>
         <Words text="Або будь-який ніж. Безкоштовно." at={LT.appIn + 4} size={70} stagger={2} mark="Безкоштовно." exit={LT.outroIn - 4} />
