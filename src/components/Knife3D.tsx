@@ -8,6 +8,11 @@ import { useThree } from "@react-three/fiber";
 
 export type Skin = { map: string; metal?: string };
 
+// The web preview host only serves whitelisted extensions, so it re-publishes
+// .glb/.hdr with an extra suffix; the Remotion renderer leaves this empty.
+const bin = (path: string) =>
+  staticFile(path + ((window as unknown as { remotion_binSuffix?: string }).remotion_binSuffix ?? ""));
+
 type Props = {
   model: string; // file in public/models
   skins: Skin[];
@@ -45,7 +50,7 @@ const useAssets = (model: string, skins: Skin[]) => {
     const tl = new THREE.TextureLoader();
     Promise.all([
       new Promise<THREE.Group>((res, rej) =>
-        new GLTFLoader().load(staticFile(`models/${model}`), (g) => res(g.scene), undefined, rej),
+        new GLTFLoader().load(bin(`models/${model}`), (g) => res(g.scene), undefined, rej),
       ),
       Promise.all(
         skins.map(async (s) => ({
@@ -81,7 +86,7 @@ const Env: React.FC = () => {
   useEffect(() => {
     const pmrem = new THREE.PMREMGenerator(gl);
     new RGBELoader().load(
-      staticFile("environment.hdr"),
+      bin("environment.hdr"),
       (t) => {
         scene.environment = pmrem.fromEquirectangular(t).texture;
         t.dispose();

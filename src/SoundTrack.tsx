@@ -11,6 +11,12 @@ import { T } from "./theme";
 
 type Cue = { at: number; sfx: string; vol?: number };
 
+// Length of each synthesized SFX in frames, so its <Audio> unmounts when done.
+const LEN: Record<string, number> = {
+  impact: 54, slam: 18, whoosh: 17, whoosh_down: 15, reverse: 21, tick: 3, fail: 27,
+  ding: 66, glitch: 14, pop: 6, pop_hi: 6, riser: 60, coins: 29, cash: 30,
+};
+
 const cues: Cue[] = [
   // Hook
   { at: HOOK_HITS[0], sfx: "slam", vol: 0.7 },
@@ -62,7 +68,7 @@ export const SoundTrack: React.FC = () => (
   <>
     <Audio src={staticFile("sfx/music.wav")} volume={0.75} />
     {cues.map((c, i) => (
-      <Sequence key={i} from={c.at} layout="none">
+      <Sequence key={i} from={c.at} durationInFrames={LEN[c.sfx]} layout="none">
         <Audio src={staticFile(`sfx/${c.sfx}.wav`)} volume={c.vol ?? 1} />
       </Sequence>
     ))}

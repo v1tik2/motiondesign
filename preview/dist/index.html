@@ -1,0 +1,88 @@
+<title>CSHUNTER Knife Reel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;900&family=Onest:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --ground: #06070B;
+    --panel: #0E1018;
+    --line: #232737;
+    --text: #F4F5F8;
+    --muted: #8A8FA3;
+    --gold: #FFC93C;
+    --ink-on-gold: #1A1200;
+  }
+  html, body { background: var(--ground); }
+  body {
+    color: var(--text);
+    font: 400 15px/1.5 "Onest", system-ui, sans-serif;
+    padding-inline: 16px;
+    padding-block: 20px 32px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 20px; }
+  header { display: grid; gap: 6px; }
+  .eyebrow {
+    font: 600 12px/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--gold);
+  }
+  h1 {
+    margin: 0; font: 900 clamp(24px, 4.4vw, 40px)/1.05 "Unbounded", system-ui, sans-serif;
+    letter-spacing: -.02em; text-wrap: balance;
+  }
+  h1 em { font-style: normal; color: var(--gold); }
+  .sub { margin: 0; color: var(--muted); max-width: 62ch; }
+
+  .stage { display: flex; gap: 24px; align-items: flex-start; }
+  .phone {
+    flex: none;
+    height: min(78vh, 820px);
+    aspect-ratio: 9 / 16;
+    max-width: 100%;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: 0 0 0 6px #000, 0 30px 80px -20px rgba(255, 201, 60, .25);
+    background: #000;
+  }
+  .side { flex: 1; min-width: 0; display: grid; gap: 16px; }
+  .readout {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }
+  .tc { font: 500 32px/1 "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .fr { font: 500 12px/1 "JetBrains Mono", ui-monospace, monospace; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .chapters button {
+    width: 100%; display: flex; gap: 14px; align-items: center;
+    padding: 12px 14px; border-radius: 12px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--text);
+    font: 600 15px/1 "Onest", system-ui, sans-serif; text-align: left; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .chapters button:hover { border-color: #3a4058; }
+  .chapters button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .chapters button.on { background: var(--gold); border-color: var(--gold); color: var(--ink-on-gold); }
+  .chapters .t { font: 500 12px/1 "JetBrains Mono", ui-monospace, monospace; opacity: .7; font-variant-numeric: tabular-nums; }
+  .hint { margin: 0; color: var(--muted); font-size: 13px; }
+  .note { margin: 0; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .note b { color: var(--text); font-weight: 600; }
+
+  @media (max-width: 720px) {
+    .stage { flex-direction: column; align-items: stretch; }
+    .phone { height: auto; width: 100%; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Reels · TikTok · Threads — 1080×1920 · 28 с</span>
+    <h1>Який шанс вибити <em>ніж</em> в CS2?</h1>
+    <p class="sub">Живе прев’ю рілса для CSHUNTER. 3D-ножі й звук рахуються прямо у браузері, тож тут видно кожну правку без рендеру. Натисни ▶, щоб увімкнути звук.</p>
+  </header>
+  <div id="app"></div>
+  <p class="note"><b>Лого — тимчасова заглушка.</b> Надішли PNG логотипу й фірмові кольори, і я підставлю їх. Музика та всі звуки синтезовані з нуля, без чужих семплів.</p>
+</div>
+
+<script>window.remotion_staticBase = "."; window.remotion_binSuffix = ".wasm";</script>
+<script src="app.js"></script>

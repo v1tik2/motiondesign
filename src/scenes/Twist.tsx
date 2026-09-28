@@ -46,7 +46,7 @@ export const Twist: React.FC = () => {
               <KnifeShot model="weapon_knife_karambit.glb" skins={[KNIVES.karambitFade, KNIVES.karambitDoppler, KNIVES.karambitMarble, KNIVES.karambitCaseHardened]} />
             </Sequence>
             <Sequence from={TWIST_SWAP} layout="none">
-              <KnifeShot model="weapon_knife_butterfly.glb" skins={[KNIVES.butterflyGamma, KNIVES.butterflyFade, KNIVES.m9Doppler]} />
+              <KnifeShot model="weapon_knife_butterfly.glb" skins={[KNIVES.butterflyGamma, KNIVES.butterflyFade]} />
             </Sequence>
           </AbsoluteFill>
           <AbsoluteFill style={{ top: 280, alignItems: "center" }}>
