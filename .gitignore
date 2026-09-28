@@ -1,3 +1,4 @@
 node_modules
-out/*.png
+out/*
+!out/*.mp4
 .DS_Store
