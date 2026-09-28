@@ -196,7 +196,7 @@ const OddsCard: React.FC = () => {
   return (
     <div style={{ position: "absolute", inset: 0 }}>
       <div style={{ position: "absolute", top: 70, left: 70 }}>
-        <Label>Шанс з одного кейсу · дані Valve</Label>
+        <Label>Шанс з одного кейсу</Label>
       </div>
       <div
         style={{
