@@ -55,9 +55,6 @@ const CaseCard: React.FC = () => {
   const shake = frame > LT.click1 && frame < LT.click1 + 9 ? Math.sin(frame * 3) * 4 : 0;
   return (
     <div style={{ position: "absolute", inset: 0 }}>
-      <div style={{ position: "absolute", top: 70, width: "100%", textAlign: "center" }}>
-        <Label>CS2 · Кейс зброї</Label>
-      </div>
       <Img
         src={asset("cases/crate_community_default_png.png")}
         style={{
@@ -177,7 +174,6 @@ const Roulette: React.FC = () => {
       </div>
       {/* marker */}
       <div style={{ position: "absolute", left: W / 2 - 3, top: 36, width: 6, height: 338, borderRadius: 3, background: L.ink }} />
-      <div style={{ position: "absolute", left: W / 2 - 16, top: 26, width: 32, height: 32, borderRadius: 16, background: L.accent, border: `5px solid ${L.ink}` }} />
     </div>
   );
 };
